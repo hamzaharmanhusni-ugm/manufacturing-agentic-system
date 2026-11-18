@@ -1,0 +1,624 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T07:09:10+00:00",
+  "title": "Design System: Cement Dispatch Control",
+  "extensions": {
+    "colorMeta": {
+      "navy-ink": {
+        "role": "neutral",
+        "displayName": "Navy Ink",
+        "canonical": "#0b1b33",
+        "tonalRamp": [
+          "oklch(15% 0.052 258.3)",
+          "oklch(25% 0.052 258.3)",
+          "oklch(36% 0.052 258.3)",
+          "oklch(47% 0.052 258.3)",
+          "oklch(58% 0.052 258.3)",
+          "oklch(70% 0.052 258.3)",
+          "oklch(83% 0.052 258.3)",
+          "oklch(95% 0.052 258.3)"
+        ]
+      },
+      "slate-ink": {
+        "role": "neutral",
+        "displayName": "Slate Ink",
+        "canonical": "#3b4a63",
+        "tonalRamp": [
+          "oklch(15% 0.046 260.5)",
+          "oklch(25% 0.046 260.5)",
+          "oklch(36% 0.046 260.5)",
+          "oklch(47% 0.046 260.5)",
+          "oklch(58% 0.046 260.5)",
+          "oklch(70% 0.046 260.5)",
+          "oklch(83% 0.046 260.5)",
+          "oklch(95% 0.046 260.5)"
+        ]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#5c6b82",
+        "tonalRamp": [
+          "oklch(15% 0.041 258.8)",
+          "oklch(25% 0.041 258.8)",
+          "oklch(36% 0.041 258.8)",
+          "oklch(47% 0.041 258.8)",
+          "oklch(58% 0.041 258.8)",
+          "oklch(70% 0.041 258.8)",
+          "oklch(83% 0.041 258.8)",
+          "oklch(95% 0.041 258.8)"
+        ]
+      },
+      "cool-ground": {
+        "role": "neutral",
+        "displayName": "Cool Ground",
+        "canonical": "#f3f5f8",
+        "tonalRamp": [
+          "oklch(15% 0.005 258.3)",
+          "oklch(25% 0.005 258.3)",
+          "oklch(36% 0.005 258.3)",
+          "oklch(47% 0.005 258.3)",
+          "oklch(58% 0.005 258.3)",
+          "oklch(70% 0.005 258.3)",
+          "oklch(83% 0.005 258.3)",
+          "oklch(95% 0.005 258.3)"
+        ]
+      },
+      "form-stock": {
+        "role": "neutral",
+        "displayName": "Form Stock",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(25% 0.000 89.9)",
+          "oklch(36% 0.000 89.9)",
+          "oklch(47% 0.000 89.9)",
+          "oklch(58% 0.000 89.9)",
+          "oklch(70% 0.000 89.9)",
+          "oklch(83% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "hairline-rule": {
+        "role": "neutral",
+        "displayName": "Hairline Rule",
+        "canonical": "#c9d2de",
+        "tonalRamp": [
+          "oklch(15% 0.019 255.5)",
+          "oklch(25% 0.019 255.5)",
+          "oklch(36% 0.019 255.5)",
+          "oklch(47% 0.019 255.5)",
+          "oklch(58% 0.019 255.5)",
+          "oklch(70% 0.019 255.5)",
+          "oklch(83% 0.019 255.5)",
+          "oklch(95% 0.019 255.5)"
+        ]
+      },
+      "faint-rule": {
+        "role": "neutral",
+        "displayName": "Faint Rule",
+        "canonical": "#e3e8ef",
+        "tonalRamp": [
+          "oklch(15% 0.011 256.7)",
+          "oklch(25% 0.011 256.7)",
+          "oklch(36% 0.011 256.7)",
+          "oklch(47% 0.011 256.7)",
+          "oklch(58% 0.011 256.7)",
+          "oklch(70% 0.011 256.7)",
+          "oklch(83% 0.011 256.7)",
+          "oklch(95% 0.011 256.7)"
+        ]
+      },
+      "idle-grey": {
+        "role": "neutral",
+        "displayName": "Idle Grey",
+        "canonical": "#9aa8bb",
+        "tonalRamp": [
+          "oklch(15% 0.032 256.0)",
+          "oklch(25% 0.032 256.0)",
+          "oklch(36% 0.032 256.0)",
+          "oklch(47% 0.032 256.0)",
+          "oklch(58% 0.032 256.0)",
+          "oklch(70% 0.032 256.0)",
+          "oklch(83% 0.032 256.0)",
+          "oklch(95% 0.032 256.0)"
+        ]
+      },
+      "action-blue": {
+        "role": "primary",
+        "displayName": "Dispatch Blue",
+        "canonical": "#1d4ed8",
+        "tonalRamp": [
+          "oklch(15% 0.217 264.4)",
+          "oklch(25% 0.217 264.4)",
+          "oklch(36% 0.217 264.4)",
+          "oklch(47% 0.217 264.4)",
+          "oklch(58% 0.217 264.4)",
+          "oklch(70% 0.217 264.4)",
+          "oklch(83% 0.217 264.4)",
+          "oklch(95% 0.217 264.4)"
+        ]
+      },
+      "live-cyan": {
+        "role": "secondary",
+        "displayName": "Live Cyan",
+        "canonical": "#0891b2",
+        "tonalRamp": [
+          "oklch(15% 0.111 221.7)",
+          "oklch(25% 0.111 221.7)",
+          "oklch(36% 0.111 221.7)",
+          "oklch(47% 0.111 221.7)",
+          "oklch(58% 0.111 221.7)",
+          "oklch(70% 0.111 221.7)",
+          "oklch(83% 0.111 221.7)",
+          "oklch(95% 0.111 221.7)"
+        ]
+      },
+      "live-cyan-text": {
+        "role": "secondary",
+        "displayName": "Deep Cyan",
+        "canonical": "#0e7490",
+        "tonalRamp": [
+          "oklch(15% 0.094 223.1)",
+          "oklch(25% 0.094 223.1)",
+          "oklch(36% 0.094 223.1)",
+          "oklch(47% 0.094 223.1)",
+          "oklch(58% 0.094 223.1)",
+          "oklch(70% 0.094 223.1)",
+          "oklch(83% 0.094 223.1)",
+          "oklch(95% 0.094 223.1)"
+        ]
+      },
+      "alarm-red": {
+        "role": "tertiary",
+        "displayName": "Alarm Red",
+        "canonical": "#b91c1c",
+        "tonalRamp": [
+          "oklch(15% 0.190 27.5)",
+          "oklch(25% 0.190 27.5)",
+          "oklch(36% 0.190 27.5)",
+          "oklch(47% 0.190 27.5)",
+          "oklch(58% 0.190 27.5)",
+          "oklch(70% 0.190 27.5)",
+          "oklch(83% 0.190 27.5)",
+          "oklch(95% 0.190 27.5)"
+        ]
+      },
+      "wait-amber": {
+        "role": "tertiary",
+        "displayName": "Wait Amber",
+        "canonical": "#b45309",
+        "tonalRamp": [
+          "oklch(15% 0.146 49.0)",
+          "oklch(25% 0.146 49.0)",
+          "oklch(36% 0.146 49.0)",
+          "oklch(47% 0.146 49.0)",
+          "oklch(58% 0.146 49.0)",
+          "oklch(70% 0.146 49.0)",
+          "oklch(83% 0.146 49.0)",
+          "oklch(95% 0.146 49.0)"
+        ]
+      },
+      "approval-violet": {
+        "role": "secondary",
+        "displayName": "Approval Violet",
+        "canonical": "#5b21b6",
+        "tonalRamp": [
+          "oklch(15% 0.211 292.8)",
+          "oklch(25% 0.211 292.8)",
+          "oklch(36% 0.211 292.8)",
+          "oklch(47% 0.211 292.8)",
+          "oklch(58% 0.211 292.8)",
+          "oklch(70% 0.211 292.8)",
+          "oklch(83% 0.211 292.8)",
+          "oklch(95% 0.211 292.8)"
+        ]
+      },
+      "distribution-umber": {
+        "role": "tertiary",
+        "displayName": "Distribution Umber",
+        "canonical": "#92400e",
+        "tonalRamp": [
+          "oklch(15% 0.125 46.2)",
+          "oklch(25% 0.125 46.2)",
+          "oklch(36% 0.125 46.2)",
+          "oklch(47% 0.125 46.2)",
+          "oklch(58% 0.125 46.2)",
+          "oklch(70% 0.125 46.2)",
+          "oklch(83% 0.125 46.2)",
+          "oklch(95% 0.125 46.2)"
+        ]
+      },
+      "change-lamp": {
+        "role": "neutral",
+        "displayName": "Change Lamp",
+        "canonical": "#fff4d6",
+        "tonalRamp": [
+          "oklch(15% 0.041 90.2)",
+          "oklch(25% 0.041 90.2)",
+          "oklch(36% 0.041 90.2)",
+          "oklch(47% 0.041 90.2)",
+          "oklch(58% 0.041 90.2)",
+          "oklch(70% 0.041 90.2)",
+          "oklch(83% 0.041 90.2)",
+          "oklch(95% 0.041 90.2)"
+        ]
+      },
+      "wait-notice-tint": {
+        "role": "neutral",
+        "displayName": "Warning Notice Tint",
+        "canonical": "#fffaf0",
+        "tonalRamp": [
+          "oklch(15% 0.014 84.6)",
+          "oklch(25% 0.014 84.6)",
+          "oklch(36% 0.014 84.6)",
+          "oklch(47% 0.014 84.6)",
+          "oklch(58% 0.014 84.6)",
+          "oklch(70% 0.014 84.6)",
+          "oklch(83% 0.014 84.6)",
+          "oklch(95% 0.014 84.6)"
+        ]
+      },
+      "critical-notice-tint": {
+        "role": "neutral",
+        "displayName": "Critical Notice Tint",
+        "canonical": "#fff5f5",
+        "tonalRamp": [
+          "oklch(15% 0.011 17.3)",
+          "oklch(25% 0.011 17.3)",
+          "oklch(36% 0.011 17.3)",
+          "oklch(47% 0.011 17.3)",
+          "oklch(58% 0.011 17.3)",
+          "oklch(70% 0.011 17.3)",
+          "oklch(83% 0.011 17.3)",
+          "oklch(95% 0.011 17.3)"
+        ]
+      },
+      "docket-label": {
+        "role": "neutral",
+        "displayName": "Docket Label",
+        "canonical": "#9fb2cf",
+        "tonalRamp": [
+          "oklch(15% 0.047 258.8)",
+          "oklch(25% 0.047 258.8)",
+          "oklch(36% 0.047 258.8)",
+          "oklch(47% 0.047 258.8)",
+          "oklch(58% 0.047 258.8)",
+          "oklch(70% 0.047 258.8)",
+          "oklch(83% 0.047 258.8)",
+          "oklch(95% 0.047 258.8)"
+        ]
+      },
+      "docket-running": {
+        "role": "neutral",
+        "displayName": "Docket Running Text",
+        "canonical": "#bfe9f5",
+        "tonalRamp": [
+          "oklch(15% 0.046 217.0)",
+          "oklch(25% 0.046 217.0)",
+          "oklch(36% 0.046 217.0)",
+          "oklch(47% 0.046 217.0)",
+          "oklch(58% 0.046 217.0)",
+          "oklch(70% 0.046 217.0)",
+          "oklch(83% 0.046 217.0)",
+          "oklch(95% 0.046 217.0)"
+        ]
+      },
+      "sidebar-active": {
+        "role": "neutral",
+        "displayName": "Sidebar Active",
+        "canonical": "#1d3a66",
+        "tonalRamp": [
+          "oklch(15% 0.085 258.6)",
+          "oklch(25% 0.085 258.6)",
+          "oklch(36% 0.085 258.6)",
+          "oklch(47% 0.085 258.6)",
+          "oklch(58% 0.085 258.6)",
+          "oklch(70% 0.085 258.6)",
+          "oklch(83% 0.085 258.6)",
+          "oklch(95% 0.085 258.6)"
+        ]
+      },
+      "sidebar-panel": {
+        "role": "neutral",
+        "displayName": "Sidebar Panel",
+        "canonical": "#132a4d",
+        "tonalRamp": [
+          "oklch(15% 0.071 258.6)",
+          "oklch(25% 0.071 258.6)",
+          "oklch(36% 0.071 258.6)",
+          "oklch(47% 0.071 258.6)",
+          "oklch(58% 0.071 258.6)",
+          "oklch(70% 0.071 258.6)",
+          "oklch(83% 0.071 258.6)",
+          "oklch(95% 0.071 258.6)"
+        ]
+      },
+      "sidebar-seam": {
+        "role": "neutral",
+        "displayName": "Sidebar Seam",
+        "canonical": "#24406b",
+        "tonalRamp": [
+          "oklch(15% 0.082 258.7)",
+          "oklch(25% 0.082 258.7)",
+          "oklch(36% 0.082 258.7)",
+          "oklch(47% 0.082 258.7)",
+          "oklch(58% 0.082 258.7)",
+          "oklch(70% 0.082 258.7)",
+          "oklch(83% 0.082 258.7)",
+          "oklch(95% 0.082 258.7)"
+        ]
+      },
+      "sidebar-section": {
+        "role": "neutral",
+        "displayName": "Sidebar Section",
+        "canonical": "#8ea3c4",
+        "tonalRamp": [
+          "oklch(15% 0.054 259.4)",
+          "oklch(25% 0.054 259.4)",
+          "oklch(36% 0.054 259.4)",
+          "oklch(47% 0.054 259.4)",
+          "oklch(58% 0.054 259.4)",
+          "oklch(70% 0.054 259.4)",
+          "oklch(83% 0.054 259.4)",
+          "oklch(95% 0.054 259.4)"
+        ]
+      },
+      "sidebar-caption": {
+        "role": "neutral",
+        "displayName": "Sidebar Caption",
+        "canonical": "#a9bbd6",
+        "tonalRamp": [
+          "oklch(15% 0.043 258.4)",
+          "oklch(25% 0.043 258.4)",
+          "oklch(36% 0.043 258.4)",
+          "oklch(47% 0.043 258.4)",
+          "oklch(58% 0.043 258.4)",
+          "oklch(70% 0.043 258.4)",
+          "oklch(83% 0.043 258.4)",
+          "oklch(95% 0.043 258.4)"
+        ]
+      },
+      "sidebar-text": {
+        "role": "neutral",
+        "displayName": "Sidebar Text",
+        "canonical": "#e4ebf5",
+        "tonalRamp": [
+          "oklch(15% 0.015 257.2)",
+          "oklch(25% 0.015 257.2)",
+          "oklch(36% 0.015 257.2)",
+          "oklch(47% 0.015 257.2)",
+          "oklch(58% 0.015 257.2)",
+          "oklch(70% 0.015 257.2)",
+          "oklch(83% 0.015 257.2)",
+          "oklch(95% 0.015 257.2)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page title in the page head only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Docket number and run title on the navy head bar."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Ledger field values, tabular."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section rule titles."
+      },
+      "box-title": {
+        "displayName": "Box Title",
+        "purpose": "Docket box, authorisation and slip titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Box contents, tables, notices, log."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase condensed field labels, table headers, state words."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Box numbers and enterprise code chips."
+      }
+    },
+    "shadows": [
+      {
+        "name": "filling-lift",
+        "value": "0 3px 14px rgba(11,27,51,.16)",
+        "purpose": "The docket box currently being filled; siblings dim to 0.5."
+      },
+      {
+        "name": "approval-ring",
+        "value": "inset 0 0 0 2px #ffffff, inset 0 0 0 5px #5b21b6",
+        "purpose": "Draws the concentric approval state mark."
+      }
+    ],
+    "motion": [
+      {
+        "name": "blink-running",
+        "value": "1.2s steps(2, jump-none) infinite",
+        "purpose": "Running state mark."
+      },
+      {
+        "name": "fill-transition",
+        "value": "opacity .3s ease-out, box-shadow .3s ease-out",
+        "purpose": "Live box lift and sibling dim."
+      },
+      {
+        "name": "stamp-land",
+        "value": ".45s cubic-bezier(.16,1,.3,1)",
+        "purpose": "Authorisation stamp lands from 1.6x scale."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation: none",
+        "purpose": "Removes blink and stamp landing."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "640px"
+      },
+      {
+        "name": "container-max",
+        "value": "1600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Run and Approve: the action the reader can take.",
+      "html": "<button class=\"ds-btn-primary\">Approve</button>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-btn-primary{background:var(--act);border:1px solid var(--act);color:#fff;border-radius:2px;font:650 .95rem Archivo,sans-serif;letter-spacing:.01em;padding:8px 28px;cursor:pointer;} .ds-btn-primary:hover{background:#1e40af;border-color:#1e40af;} .ds-btn-primary:focus-visible{outline:2px solid var(--act);outline-offset:2px;}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Reject and Acknowledge; kept apart from Approve.",
+      "html": "<button class=\"ds-btn-secondary\">Reject</button>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-btn-secondary{background:var(--stock);border:1px solid var(--ink);color:var(--ink);border-radius:2px;font:650 .95rem Archivo,sans-serif;letter-spacing:.01em;padding:8px 28px;cursor:pointer;} .ds-btn-secondary:hover{background:var(--ground);} .ds-btn-secondary:focus-visible{outline:2px solid var(--act);outline-offset:2px;}"
+    },
+    {
+      "name": "State Marks",
+      "kind": "chip",
+      "refersTo": "state-mark",
+      "description": "Printed square mark plus uppercase state word.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-st\"><span class=\"ds-mk ok\"></span>Completed</span><span class=\"ds-st run\"><span class=\"ds-mk run\"></span>Running</span><span class=\"ds-st appr\"><span class=\"ds-mk appr\"></span>Requires human approval</span><span class=\"ds-st wait\"><span class=\"ds-mk wait\"></span>Waiting</span><span class=\"ds-st fail\"><span class=\"ds-mk fail\"></span>Failed</span></div>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-row{display:flex;gap:16px;flex-wrap:wrap;} .ds-st{display:inline-flex;align-items:center;font-size:.72rem;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);} .ds-st.run{color:var(--live);} .ds-st.appr{color:var(--appr);} .ds-st.wait{color:var(--wait);} .ds-st.fail{color:var(--alarm);} .ds-mk{display:inline-block;width:9px;height:9px;border:1.5px solid var(--ink3);margin-right:6px;} .ds-mk.ok{background:var(--ink);border-color:var(--ink);} .ds-mk.run{background:var(--live-fill);border-color:var(--live-fill);animation:ds-blink 1.2s steps(2,jump-none) infinite;} .ds-mk.wait{border-color:var(--wait);} .ds-mk.appr{border-color:var(--appr);background:var(--stock);box-shadow:inset 0 0 0 2px var(--stock),inset 0 0 0 5px var(--appr);} .ds-mk.fail{background:var(--alarm);border-color:var(--alarm);} @keyframes ds-blink{50%{opacity:.35;}} @media (prefers-reduced-motion:reduce){.ds-mk.run{animation:none;}}"
+    },
+    {
+      "name": "Enterprise Code Chips",
+      "kind": "chip",
+      "refersTo": "code-chip",
+      "description": "Three-letter enterprise identity in its own colour.",
+      "html": "<span class=\"ds-ec\" style=\"color:#1d4ed8\">MFG</span> <span class=\"ds-ec\" style=\"color:#0e7490\">SHP</span> <span class=\"ds-ec\" style=\"color:#92400e\">DST</span> <span class=\"ds-ec\" style=\"color:#5b21b6\">SUP</span> <span class=\"ds-ec\" style=\"color:#0b1b33\">GLB</span>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-ec{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.1em;padding:0 5px;border:1px solid currentColor;line-height:1.5;}"
+    },
+    {
+      "name": "Ledger Strip",
+      "kind": "card",
+      "refersTo": "ledger-field",
+      "description": "One ruled row of labelled figures; replaces KPI cards.",
+      "html": "<div class=\"ds-ledger\"><div class=\"f\"><div class=\"lbl\">Enterprises</div><div class=\"v\">4/4</div><div class=\"s\">independent APIs</div></div><div class=\"f appr\"><div class=\"lbl\">To sign</div><div class=\"v\">3</div><div class=\"s\">dispatch decisions</div></div><div class=\"f warn\"><div class=\"lbl\">Vessels</div><div class=\"v\">17/19</div><div class=\"s\">2 delayed</div></div><div class=\"f bad\"><div class=\"lbl\">Plants</div><div class=\"v\">9</div><div class=\"s\">1 at stock-out risk</div></div></div>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-ledger{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--ink);background:var(--stock);} .ds-ledger .f{padding:6px 12px;border-left:1px solid var(--rule);} .ds-ledger .f:first-child{border-left:0;} .ds-ledger .lbl{font-size:.68rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-stretch:88%;} .ds-ledger .v{font-size:1.35rem;font-weight:700;line-height:1.2;letter-spacing:-.02em;} .ds-ledger .s{font-size:.72rem;color:var(--ink3);} .ds-ledger .bad .v{color:var(--alarm);} .ds-ledger .warn .v{color:var(--wait);} .ds-ledger .appr .v{color:var(--appr);}"
+    },
+    {
+      "name": "Dispatch Docket",
+      "kind": "custom",
+      "refersTo": "docket-box",
+      "description": "Navy head bar over numbered boxes each agent fills and signs; the filling box lifts, others dim.",
+      "html": "<div class=\"ds-head\"><span class=\"no\">R-5E04B3 &middot; Shipping disruption</span><span class=\"lbl\">Elapsed</span> <b>6.38 s</b></div><div class=\"ds-dkrow dim\"><div class=\"ds-box\"><div class=\"bh\"><span class=\"bt\"><span class=\"bn\">BOX 2</span> Stock Monitoring</span><span class=\"ec\">MFG</span></div><ul><li>PP C: stock-out in <b>2.47 d</b></li></ul><div class=\"sig\"><span><i>Signed</i> 13:45:33 &middot; 630 ms</span></div></div><div class=\"ds-box live\"><div class=\"bh\"><span class=\"bt\"><span class=\"bn\">BOX 3</span> Fleet Tracking</span><span class=\"ec\" style=\"color:#0e7490\">SHP</span></div><ul><li><b>12</b> of 19 vessels available</li></ul><div class=\"sig\"><span>Awaiting signature</span></div></div></div>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-head{background:var(--ink);color:#fff;padding:10px 14px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;} .ds-head .no{font-size:1.5rem;font-weight:750;letter-spacing:-.01em;margin-right:auto;} .ds-head .lbl{font-size:.68rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:#9fb2cf;} .ds-dkrow{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule);border-top:0;background:var(--stock);} .ds-box{padding:9px 11px 8px;border-left:1px solid var(--rule);display:flex;flex-direction:column;gap:6px;transition:opacity .3s ease-out,box-shadow .3s ease-out;} .ds-box:first-child{border-left:0;} .ds-dkrow.dim .ds-box:not(.live){opacity:.5;} .ds-box.live{outline:1px solid var(--live-fill);outline-offset:-1px;box-shadow:0 3px 14px rgba(11,27,51,.16);position:relative;} .ds-box .bh{display:flex;justify-content:space-between;border-bottom:1px solid var(--rule2);padding-bottom:6px;} .ds-box .bt{font-size:.92rem;font-weight:700;} .ds-box .bn{font-size:.66rem;font-weight:700;letter-spacing:.1em;color:var(--ink3);margin-right:4px;} .ds-box .ec{font-size:.66rem;font-weight:700;letter-spacing:.1em;padding:0 5px;border:1px solid currentColor;color:var(--act);align-self:flex-start;} .ds-box ul{font-size:.82rem;color:var(--ink2);line-height:1.45;padding-left:16px;margin:0;} .ds-box .sig{border-top:1px dashed var(--rule);padding-top:5px;font-size:.72rem;color:var(--ink3);} .ds-box .sig i{font-style:normal;color:var(--ink);font-weight:600;}"
+    },
+    {
+      "name": "Authorisation Stamps",
+      "kind": "custom",
+      "refersTo": "stamp-approved",
+      "description": "Double-ruled rotated stamp recording a human decision.",
+      "html": "<span class=\"ds-stamp\">Approved</span> <span class=\"ds-stamp rej\">Rejected</span> <span class=\"ds-stamp sup\">Superseded</span>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-stamp{display:inline-block;margin:8px;border:3px double currentColor;padding:2px 10px;font-size:.82rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;transform:rotate(-4deg);color:var(--act);animation:ds-land .45s cubic-bezier(.16,1,.3,1) both;} .ds-stamp.rej{color:var(--alarm);} .ds-stamp.sup{color:var(--ink3);} @keyframes ds-land{from{transform:rotate(-4deg) scale(1.6);opacity:0;}to{transform:rotate(-4deg) scale(1);opacity:1;}} @media (prefers-reduced-motion:reduce){.ds-stamp{animation:none;}}"
+    },
+    {
+      "name": "Ruled Plan Table",
+      "kind": "custom",
+      "refersTo": "docket-box",
+      "description": "Plan rows; changed rows stay lit with the old vessel struck through until acknowledged.",
+      "html": "<table class=\"ds-rt\"><tr><th>Plant</th><th class=\"n\">Rank</th><th>Vessel</th><th class=\"n\">Arrives</th></tr><tr class=\"chg\"><td><b>PP C</b></td><td class=\"n\">1</td><td><span class=\"struck\">Ship J</span> <b>Ship N</b></td><td class=\"n late\">4.5 d</td></tr><tr><td><b>PP I</b></td><td class=\"n\">8</td><td><b>Ship K</b></td><td class=\"n\">6.5 d</td></tr></table>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-rt{border-collapse:collapse;width:100%;font-size:.82rem;background:var(--stock);} .ds-rt th{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:left;border-bottom:1px solid var(--ink);padding:5px 8px;font-stretch:88%;} .ds-rt td{border-bottom:1px solid var(--rule2);padding:5px 8px;} .ds-rt .n{text-align:right;} .ds-rt tr.chg td{background:var(--hl);} .ds-rt .struck{text-decoration:line-through;color:var(--ink3);} .ds-rt .late{color:var(--alarm);font-weight:650;}"
+    },
+    {
+      "name": "Notices",
+      "kind": "custom",
+      "refersTo": "notice-warning",
+      "description": "Bordered tinted strips for warning, critical and info alerts.",
+      "html": "<div class=\"ds-notice\"><b>Low stock</b> PP C below threshold. <span class=\"src\">Stock Monitoring</span></div><div class=\"ds-notice critical\"><b>Stock-out risk</b> PP C in 2.47 d. <span class=\"src\">Planner</span></div>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-notice{border:1px solid var(--wait);background:#fffaf0;padding:7px 10px;margin-bottom:6px;font-size:.82rem;} .ds-notice.critical{border-color:var(--alarm);background:#fff5f5;} .ds-notice .src{color:var(--ink3);}"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Navy sidebar with caps section headers and square links.",
+      "html": "<nav class=\"ds-nav\"><div class=\"h\">Global</div><a class=\"on\" href=\"#\">Control Center</a><a href=\"#\">Simulation Center</a><div class=\"h\">Enterprises</div><a href=\"#\">Cement Manufacturing</a></nav>",
+      "css": ":host{--ink:#0b1b33;--ink2:#3b4a63;--ink3:#5c6b82;--ground:#f3f5f8;--stock:#ffffff;--rule:#c9d2de;--rule2:#e3e8ef;--act:#1d4ed8;--live:#0e7490;--live-fill:#0891b2;--alarm:#b91c1c;--wait:#b45309;--appr:#5b21b6;--hl:#fff4d6;font-family:Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink);} .ds-nav{background:#0b1b33;padding:12px;width:240px;display:flex;flex-direction:column;gap:2px;} .ds-nav .h{color:#8ea3c4;font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin:10px 0 4px;} .ds-nav a{color:#e4ebf5;text-decoration:none;padding:6px 10px;font-size:.9rem;border-radius:0;} .ds-nav a:hover{background:#132a4d;} .ds-nav a.on{background:#1d3a66;} .ds-nav a:focus-visible{outline:2px solid #38bdf8;outline-offset:2px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Dispatch Manifest",
+    "overview": "Every screen is a printed shipping form: bills of lading, cargo manifests, dispatch dockets. White form stock sits on a cool grey ground, ruled with navy and blue-grey hairlines, and filled in navy ink with tabular figures. An orchestration run is a numbered docket. Each agent fills and signs its own box, the planner writes the plan into a ruled table, the narrator adds remarks, and a person stamps the authorisation box. The form is the interface; there are no floating cards, no pills and no gradients.\n\nDensity is high and deliberate, because the same sheet serves a projector audience and a working planner. Hierarchy comes from scale and weight contrast inside one variable family (Archivo), not from colour. Colour is reserved for meaning: blue for action, cyan for what is running now, violet for what waits on a human, amber for waiting and warning, red only for failure, rejection, stock-out and lateness. Motion is limited to three functional events: the running mark blinks, the filling box lifts while the others dim, and an authorisation stamp lands.",
+    "keyCharacteristics": [
+      "Ruled form stock: 1px hairline seams, navy frame rules, zero radius on every form surface.",
+      "Field labels as small uppercase condensed caps above tabular-figure values.",
+      "States as printed square marks plus an uppercase word, never as rounded badges.",
+      "Enterprise identity by a 1px-ruled three-letter code chip in the enterprise colour.",
+      "Human authority as a double-ruled, rotated stamp."
+    ],
+    "rules": [
+      {
+        "name": "The Ink Not Green Rule",
+        "body": "Completed is a filled navy square. Green is not a state colour in this system; success is the absence of alarm.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Is Refusal Rule",
+        "body": "Alarm red appears only for failure, rejection, stock-out, late arrival and critical notices. If nothing is wrong, the screen holds no red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lamp Until Acknowledged Rule",
+        "body": "A changed plan row stays lit in change lamp, with the superseded value struck through, until a person acknowledges it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scale Contrast Rule",
+        "body": "Hierarchy is carried by size, weight and width, never by colouring a heading.",
+        "section": "typography"
+      },
+      {
+        "name": "The Field Label Rule",
+        "body": "A label sits above its value in small condensed uppercase muted ink; the value is the loud element.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lift Only While Filling Rule",
+        "body": "Surfaces are flat at rest. Only the box currently being filled lifts, and only while it is running.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Zero Radius Rule",
+        "body": "Forms are cut paper: 0 radius. Only controls take 2px.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do draw every surface as ruled form stock: white fill, 1px hairline seams, 0 radius.",
+      "Do put a small uppercase condensed label above every figure, and set figures in tabular numerals.",
+      "Do express state with a square mark and an uppercase word, using the mark colours above.",
+      "Do identify an enterprise with its three-letter code chip wherever an agent or message appears.",
+      "Do keep changed plan rows lit in change lamp, with the old value struck through, until acknowledged.",
+      "Do keep Reject separated from Approve and secondary in weight.",
+      "Do honour reduced motion: no blink, no stamp landing."
+    ],
+    "donts": [
+      "Don't build KPI card grids; use a ledger strip of ruled fields.",
+      "Don't round form surfaces or use pill badges for state.",
+      "Don't use green for success or red for anything except failure, rejection, stock-out, lateness and critical notices.",
+      "Don't add shadows to resting surfaces; only the box being filled lifts.",
+      "Don't use gradients or decorative animation.",
+      "Don't colour headings to create hierarchy; use size, weight and width."
+    ]
+  }
+}

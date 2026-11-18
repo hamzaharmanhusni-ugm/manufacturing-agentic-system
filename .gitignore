@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+logs/
+data/stores/
+.playwright-mcp/
+.env
+# Dribbble images: copyright of their designers, local reference only
+docs/design-references/*.png
+docs/design-references/*.jpg
+docs/design-references/*.webp
+.impeccable/review/
+.impeccable/live/
+nul

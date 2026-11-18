@@ -1,0 +1,25 @@
+[theme]
+base = "light"
+font = "Archivo:https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap, sans-serif"
+primaryColor = "#1d4ed8"
+backgroundColor = "#f3f5f8"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#0b1b33"
+linkColor = "#1d4ed8"
+borderColor = "#c9d2de"
+showWidgetBorder = true
+baseRadius = "2px"
+baseFontSize = 15
+
+[theme.sidebar]
+backgroundColor = "#0b1b33"
+secondaryBackgroundColor = "#132a4d"
+textColor = "#e4ebf5"
+borderColor = "#24406b"
+primaryColor = "#38bdf8"
+
+[server]
+runOnSave = true
+
+[client]
+toolbarMode = "minimal"

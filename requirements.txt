@@ -1,0 +1,19 @@
+# Backend (5 FastAPI services)
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2.5
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+pymongo>=4.6
+httpx>=0.27
+# ML and data
+pandas>=2.0
+numpy>=1.26
+scikit-learn>=1.4
+lightgbm>=4.3
+statsmodels>=0.14
+# Frontend
+streamlit>=1.40
+plotly>=5.24
+# Tests
+pytest>=7.0
