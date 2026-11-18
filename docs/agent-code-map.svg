@@ -1,0 +1,427 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1775.0" viewBox="0 0 1600 1775.0" font-family="Archivo, 'Segoe UI', Arial, sans-serif">
+<style>
+.title {font-size:28px; font-weight:800; fill:#0b1b33; letter-spacing:-0.5px;}
+.sub {font-size:14px; fill:#3b4a63;}
+.agent {font-size:16px; font-weight:700; fill:#0b1b33;}
+.role {font-size:12px; fill:#3b4a63;}
+.file {font-size:11px; fill:#5c6b82; font-family:Consolas, 'Courier New', monospace;}
+.ext {font-size:10px; font-weight:700; letter-spacing:1.2px; fill:#5c6b82;}
+.code {font-size:10px; font-weight:700; letter-spacing:1.2px;}
+.leg {font-size:12px; fill:#3b4a63;}
+.ln {font-size:11px; fill:#9aa8bb; font-family:Consolas, 'Courier New', monospace;}
+.src {font-size:11.5px; fill:#0b1b33; font-family:Consolas, 'Courier New', monospace;}
+</style>
+<rect width="1600" height="1775.0" fill="#f3f5f8"/>
+<rect width="1600" height="6" fill="#0b1b33"/>
+<text x="20" y="52" class="title">Where the agents live in the code</text>
+<text x="20" y="78" class="sub">Manufacturing Agentic System · each panel is a real excerpt (file:line) of one agent. Worker agents run inside their own enterprise API; the Global Orchestrator calls them over HTTP.</text>
+<text x="20" y="108" class="leg">Enterprise that hosts the agent:</text>
+<rect x="580" y="96" width="34" height="16" fill="none" stroke="#0b1b33"/><text x="597" y="108" text-anchor="middle" class="code" fill="#0b1b33">GLB</text><text x="620" y="108" class="leg">Global</text><rect x="700" y="96" width="34" height="16" fill="none" stroke="#1d4ed8"/><text x="717" y="108" text-anchor="middle" class="code" fill="#1d4ed8">MFG</text><text x="740" y="108" class="leg">Manufacturer</text><rect x="820" y="96" width="34" height="16" fill="none" stroke="#0e7490"/><text x="837" y="108" text-anchor="middle" class="code" fill="#0e7490">SHP</text><text x="860" y="108" class="leg">Shipping</text><rect x="940" y="96" width="34" height="16" fill="none" stroke="#92400e"/><text x="957" y="108" text-anchor="middle" class="code" fill="#92400e">DST</text><text x="980" y="108" class="leg">Distribution</text><rect x="1060" y="96" width="34" height="16" fill="none" stroke="#5b21b6"/><text x="1077" y="108" text-anchor="middle" class="code" fill="#5b21b6">SUP</text><text x="1100" y="108" class="leg">Supplier</text>
+<line x1="20" y1="128" x2="1580" y2="128" stroke="#0b1b33"/>
+<g transform="translate(20,150)">
+<rect width="770" height="328.0" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#0b1b33"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#0b1b33"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#0b1b33">GLB</text>
+<text x="64" y="28" class="agent">Orchestrator Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">Receives the event, writes the task plan, fans out to all workers in parallel (ThreadPoolExecutor).</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/global_orchestrator/main.py:259</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#0b1b33" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="252.0" fill="#0b1b33"/>
+<text x="14" y="74.0" class="ln">259</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">def pipeline(run, event_text, context=&quot;&quot;):</text>
+<text x="14" y="89.5" class="ln">260</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">    &quot;&quot;&quot;Event -&gt; Orchestrator -&gt; parallel workers -&gt; Dispatch Planner -&gt; Narrator -&gt; Human approval.&quot;&quot;&quot;</text>
+<text x="14" y="105.0" class="ln">261</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    rid = run[&quot;id&quot;]</text>
+<text x="14" y="120.5" class="ln">262</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    run[&quot;steps&quot;].append({&quot;agent&quot;: &quot;Event Detected&quot;, &quot;enterprise&quot;: &quot;global&quot;, &quot;status&quot;: &quot;Completed&quot;, &quot;s...</text>
+<text x="14" y="136.0" class="ln">263</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">                         &quot;ended&quot;: now(), &quot;duration_ms&quot;: 0, &quot;inputs&quot;: {}, &quot;outputs&quot;: {&quot;event&quot;: event_t...</text>
+<text x="14" y="151.5" class="ln">264</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    message(&quot;Event Bus&quot;, &quot;Orchestrator Agent&quot;, event_text, &quot;event&quot;, frm_ent=&quot;event-bus&quot;, run_id=rid)</text>
+<text x="14" y="167.0" class="ln">265</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">    agents = WORKERS + [EXT[e] for e in run[&quot;ext&quot;]]</text>
+<text x="14" y="182.5" class="ln">266</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">    local_step(run, &quot;Orchestrator Agent&quot;, lambda: (</text>
+<text x="14" y="198.0" class="ln">267</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">        {&quot;event&quot;: event_text}, {&quot;task_plan&quot;: agents, &quot;mode&quot;: &quot;parallel fan-out / fan-in&quot;},</text>
+<text x="14" y="213.5" class="ln">268</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">        [f&quot;Task plan: {len(agents)} agents in parallel&quot;, &quot;Agents do not call each other; only the orc...</text>
+<text x="14" y="229.0" class="ln">269</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">    AGENTS[&quot;Orchestrator Agent&quot;][&quot;status&quot;] = &quot;Waiting for response&quot;</text>
+<text x="14" y="244.5" class="ln">270</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="260.0" class="ln">271</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">    with ThreadPoolExecutor(max_workers=len(agents)) as pool:</text>
+<text x="14" y="275.5" class="ln">272</text>
+<text x="52" y="275.5" class="src" xml:space="preserve">        results = dict(zip(agents, pool.map(lambda n: run_agent(n, run), agents)))</text>
+<text x="14" y="291.0" class="ln">273</text>
+<text x="52" y="291.0" class="src" xml:space="preserve">    run[&quot;parallel_wall_ms&quot;] = round((time.perf_counter() - t0) * 1000, 1)</text>
+<text x="14" y="306.5" class="ln">274</text>
+<text x="52" y="306.5" class="src" xml:space="preserve">    AGENTS[&quot;Orchestrator Agent&quot;][&quot;status&quot;] = &quot;Completed&quot;</text>
+</g>
+<g transform="translate(810,150)">
+<rect width="770" height="281.5" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#0b1b33"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#0b1b33"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#0b1b33">GLB</text>
+<text x="64" y="28" class="agent">A2A call to a worker agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">Each worker is called over HTTP on its own enterprise API, with an API key.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/global_orchestrator/main.py:124</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#0b1b33" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="205.5" fill="#0b1b33"/>
+<text x="14" y="74.0" class="ln">124</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">def run_agent(name, run):</text>
+<text x="14" y="89.5" class="ln">125</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">    a = AGENTS[name]</text>
+<text x="14" y="105.0" class="ln">126</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    step = {&quot;agent&quot;: name, &quot;enterprise&quot;: a[&quot;host&quot;], &quot;status&quot;: &quot;Running&quot;, &quot;started&quot;: now(), &quot;t0&quot;: time...</text>
+<text x="14" y="120.5" class="ln">127</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    run[&quot;steps&quot;].append(step)</text>
+<text x="14" y="136.0" class="ln">128</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    a[&quot;status&quot;] = &quot;Running&quot;</text>
+<text x="14" y="151.5" class="ln">129</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    message(&quot;Orchestrator Agent&quot;, name, f&quot;Task: {a[&#x27;role&#x27;]}&quot;, &quot;request&quot;, run_id=run[&quot;id&quot;])</text>
+<text x="14" y="167.0" class="ln">130</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">    COUNTERS[&quot;agent_calls&quot;] += 1</text>
+<text x="14" y="182.5" class="ln">131</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">    try:</text>
+<text x="14" y="198.0" class="ln">132</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">        time.sleep(DEMO_DELAY)</text>
+<text x="14" y="213.5" class="ln">133</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">        res = call(a[&quot;host&quot;], &quot;POST&quot;, a[&quot;path&quot;])</text>
+<text x="14" y="229.0" class="ln">134</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">        step.update(status=&quot;Completed&quot;, inputs=res[&quot;inputs&quot;], outputs=res[&quot;outputs&quot;], log=res[&quot;log&quot;])</text>
+<text x="14" y="244.5" class="ln">135</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">        a[&quot;status&quot;] = &quot;Completed&quot;</text>
+<text x="14" y="260.0" class="ln">136</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">        COUNTERS[&quot;agent_ok&quot;] += 1</text>
+</g>
+<g transform="translate(20,498.0)">
+<rect width="770" height="328.0" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#1d4ed8"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#1d4ed8"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#1d4ed8">MFG</text>
+<text x="64" y="28" class="agent">Stock Monitoring Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">Re-measures 22 silos, ARIMA stock-out time, low-stock events fired once.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/manufacturer_api/main.py:185</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#1d4ed8" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="252.0" fill="#1d4ed8"/>
+<text x="14" y="74.0" class="ln">185</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">@app.post(&quot;/agents/stock-monitoring/run&quot;, tags=[&quot;agents&quot;])</text>
+<text x="14" y="89.5" class="ln">186</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">def stock_monitoring(_=Depends(require(&quot;agents&quot;))):</text>
+<text x="14" y="105.0" class="ln">187</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="120.5" class="ln">188</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    snap = snapshot()</text>
+<text x="14" y="136.0" class="ln">189</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    low = [s for s in snap[&quot;series&quot;] if s[&quot;low_stock&quot;]]</text>
+<text x="14" y="151.5" class="ln">190</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    new_events = []</text>
+<text x="14" y="167.0" class="ln">191</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">    for s in low:  # alert once: re-arms after the level recovers</text>
+<text x="14" y="182.5" class="ln">192</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">        key = f&quot;{s[&#x27;plant_id&#x27;]}|{s[&#x27;cement_type&#x27;]}&quot;</text>
+<text x="14" y="198.0" class="ln">193</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">        if key not in STATE[&quot;alerted&quot;]:</text>
+<text x="14" y="213.5" class="ln">194</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">            STATE[&quot;alerted&quot;].add(key)</text>
+<text x="14" y="229.0" class="ln">195</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">            new_events.append({&quot;event&quot;: &quot;low_stock&quot;, **s})</text>
+<text x="14" y="244.5" class="ln">196</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">    for key in list(STATE[&quot;alerted&quot;]):</text>
+<text x="14" y="260.0" class="ln">197</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">        if not any(f&quot;{s[&#x27;plant_id&#x27;]}|{s[&#x27;cement_type&#x27;]}&quot; == key for s in low):</text>
+<text x="14" y="275.5" class="ln">198</text>
+<text x="52" y="275.5" class="src" xml:space="preserve">            STATE[&quot;alerted&quot;].discard(key)</text>
+<text x="14" y="291.0" class="ln">199</text>
+<text x="52" y="291.0" class="src" xml:space="preserve">    log = [f&quot;Re-measured 22 silos at {snap[&#x27;computed_at&#x27;]}&quot;,</text>
+<text x="14" y="306.5" class="ln">200</text>
+<text x="52" y="306.5" class="src" xml:space="preserve">           f&quot;ARIMA stock-out projection for {len(snap[&#x27;series&#x27;])} plant/cement-type series&quot;,</text>
+</g>
+<g transform="translate(810,451.5)">
+<rect width="770" height="266.0" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#1d4ed8"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#1d4ed8"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#1d4ed8">MFG</text>
+<text x="64" y="28" class="agent">ML Forecasting Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">LightGBM P10/P50/P90 for 14 days; champion vs TFT challenger (simulation mode).</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/manufacturer_api/main.py:206</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#1d4ed8" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="190.0" fill="#1d4ed8"/>
+<text x="14" y="74.0" class="ln">206</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">@app.post(&quot;/agents/ml-forecasting/run&quot;, tags=[&quot;agents&quot;])</text>
+<text x="14" y="89.5" class="ln">207</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">def ml_forecasting(_=Depends(require(&quot;agents&quot;))):</text>
+<text x="14" y="105.0" class="ln">208</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="120.5" class="ln">209</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    fc = pd.DataFrame(snapshot()[&quot;forecast&quot;])</text>
+<text x="14" y="136.0" class="ln">210</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    summary = fc.groupby([&quot;plant_id&quot;, &quot;cement_type&quot;])[[&quot;p10&quot;, &quot;p50&quot;, &quot;p90&quot;]].sum().round(0).reset_ind...</text>
+<text x="14" y="151.5" class="ln">211</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    m = forecaster.metrics</text>
+<text x="14" y="167.0" class="ln">212</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">    log = [f&quot;LightGBM champion: 14-day P10/P50/P90 for {len(summary)} series&quot;,</text>
+<text x="14" y="182.5" class="ln">213</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">           f&quot;Backtest WAPE champion {m[&#x27;wape_champion&#x27;]:.3f} vs challenger {m[&#x27;wape_challenger&#x27;]:.3f}...</text>
+<text x="14" y="198.0" class="ln">214</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">           &quot;Ensemble selected&quot; if m[&quot;ensemble_selected&quot;] else &quot;Champion kept (ensemble not better)&quot;]</text>
+<text x="14" y="213.5" class="ln">215</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">    return agent_result(&quot;ML Forecasting Agent&quot;, {&quot;history_days&quot;: 400, &quot;horizon&quot;: 14},</text>
+<text x="14" y="229.0" class="ln">216</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">                        {&quot;summary_14d&quot;: summary, &quot;metrics&quot;: m}, log, t0)</text>
+<text x="14" y="244.5" class="ln">217</text>
+<text x="52" y="244.5" class="src" xml:space="preserve"></text>
+</g>
+<g transform="translate(20,846.0)">
+<rect width="770" height="250.5" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#1d4ed8"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#1d4ed8"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#1d4ed8">MFG</text>
+<text x="64" y="28" class="agent">Demand &amp; Priority Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">Eq. 14 priority grades; price and margin leave the enterprise only as grades.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/manufacturer_api/main.py:219</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#1d4ed8" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="174.5" fill="#1d4ed8"/>
+<text x="14" y="74.0" class="ln">219</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">@app.post(&quot;/agents/demand-priority/run&quot;, tags=[&quot;agents&quot;])</text>
+<text x="14" y="89.5" class="ln">220</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">def demand_priority(_=Depends(require(&quot;agents&quot;))):</text>
+<text x="14" y="105.0" class="ln">221</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="120.5" class="ln">222</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    snap = snapshot()</text>
+<text x="14" y="136.0" class="ln">223</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    rank = shared_ranking(snap)</text>
+<text x="14" y="151.5" class="ln">224</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    log = [&quot;Combined sales history, S&amp;OP, forecast, price and margin (grades only leave the enterpris...</text>
+<text x="14" y="167.0" class="ln">225</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">           &quot;Eq. 14 priority score with weights 0.35/0.20/0.20/0.15/0.10&quot;,</text>
+<text x="14" y="182.5" class="ln">226</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">           f&quot;Top plant: {rank[0][&#x27;plant_id&#x27;]} score {rank[0][&#x27;priority_score&#x27;]}&quot;]</text>
+<text x="14" y="198.0" class="ln">227</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">    return agent_result(&quot;Demand &amp; Priority Agent&quot;, {&quot;weights&quot;: de.PLANT_WEIGHTS},</text>
+<text x="14" y="213.5" class="ln">228</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">                        {&quot;ranking&quot;: rank, &quot;needs&quot;: snap[&quot;needs&quot;]}, log, t0)</text>
+<text x="14" y="229.0" class="ln">229</text>
+<text x="52" y="229.0" class="src" xml:space="preserve"></text>
+</g>
+<g transform="translate(810,737.5)">
+<rect width="770" height="328.0" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#0e7490"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#0e7490"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#0e7490">SHP</text>
+<text x="64" y="28" class="agent">Fleet Tracking Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">GPS, geofence + DBSCAN status, Random Forest ETA, Weibull failure risk per vessel.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/shipping_api/main.py:155</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#0e7490" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="252.0" fill="#0e7490"/>
+<text x="14" y="74.0" class="ln">155</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">@app.post(&quot;/agents/fleet-tracking/run&quot;, tags=[&quot;agents&quot;])</text>
+<text x="14" y="89.5" class="ln">156</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">def fleet_tracking(_=Depends(require(&quot;agents&quot;))):</text>
+<text x="14" y="105.0" class="ln">157</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="120.5" class="ln">158</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    fleet, voyages_all, waves = fleet_view()</text>
+<text x="14" y="136.0" class="ln">159</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    month = datetime.now().month</text>
+<text x="14" y="151.5" class="ln">160</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    calls = {}</text>
+<text x="14" y="167.0" class="ln">161</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">    for vy in voyages_all:</text>
+<text x="14" y="182.5" class="ln">162</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">        calls[(vy[&quot;vesselName&quot;], vy[&quot;toPlant&quot;])] = calls.get((vy[&quot;vesselName&quot;], vy[&quot;toPlant&quot;]), 0) + 1</text>
+<text x="14" y="198.0" class="ln">163</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">    free = [v for v in fleet if v[&quot;available_in_h&quot;] is not None and not v[&quot;assigned_plant&quot;]]</text>
+<text x="14" y="213.5" class="ln">164</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">    rows = [(sea_distance_nm(LP, PLANT_XY[p[&quot;id&quot;]]), v[&quot;speed_kn&quot;] if v[&quot;speed_kn&quot;] &gt; 6 else 10.5,</text>
+<text x="14" y="229.0" class="ln">165</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">             waves.get(p[&quot;id&quot;], 1.0), v[&quot;capacity_ton&quot;], p[&quot;id&quot;], month) for v in free for p in PLANTS]</text>
+<text x="14" y="244.5" class="ln">166</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">    preds = iter(eta_model.predict(rows)) if rows else iter([])</text>
+<text x="14" y="260.0" class="ln">167</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">    options = {p[&quot;id&quot;]: [] for p in PLANTS}</text>
+<text x="14" y="275.5" class="ln">168</text>
+<text x="52" y="275.5" class="src" xml:space="preserve">    for v in free:</text>
+<text x="14" y="291.0" class="ln">169</text>
+<text x="52" y="291.0" class="src" xml:space="preserve">        for p in PLANTS:</text>
+<text x="14" y="306.5" class="ln">170</text>
+<text x="52" y="306.5" class="src" xml:space="preserve">            mu, sd = next(preds)</text>
+</g>
+<g transform="translate(20,1116.5)">
+<rect width="770" height="297.0" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#0b1b33"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#0b1b33"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#0b1b33">GLB</text>
+<text x="64" y="28" class="agent">Dispatch Planner Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">Combines priority and fleet options: SAW ship ranking and greedy assignment (deterministic).</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/global_orchestrator/main.py:175</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#0b1b33" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="221.0" fill="#0b1b33"/>
+<text x="14" y="74.0" class="ln">175</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">def plan_dispatch(results, load_port):</text>
+<text x="14" y="89.5" class="ln">176</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">    pri = results[&quot;Demand &amp; Priority Agent&quot;]</text>
+<text x="14" y="105.0" class="ln">177</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    fleet = results[&quot;Fleet Tracking Agent&quot;]</text>
+<text x="14" y="120.5" class="ln">178</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    plan, excluded = de.assign(pri[&quot;ranking&quot;], fleet[&quot;options&quot;], pri[&quot;needs&quot;])</text>
+<text x="14" y="136.0" class="ln">179</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    avail = {s[&quot;cement_type&quot;]: s[&quot;available_ton&quot;] for s in load_port[&quot;stock&quot;]}</text>
+<text x="14" y="151.5" class="ln">180</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    for p in plan:  # load port stock caps the quantity (supplier disruption reduces it)</text>
+<text x="14" y="167.0" class="ln">181</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">        if p.get(&quot;vessel&quot;):</text>
+<text x="14" y="182.5" class="ln">182</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">            q = min(p[&quot;quantity_ton&quot;], max(0, avail.get(p[&quot;cement_type&quot;], 0)))</text>
+<text x="14" y="198.0" class="ln">183</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">            if q &lt; p[&quot;quantity_ton&quot;]:</text>
+<text x="14" y="213.5" class="ln">184</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">                p[&quot;warnings&quot;].append(f&quot;quantity limited by load port stock ({int(q)} t available)&quot;)</text>
+<text x="14" y="229.0" class="ln">185</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">            p[&quot;quantity_ton&quot;] = int(q)</text>
+<text x="14" y="244.5" class="ln">186</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">            avail[p[&quot;cement_type&quot;]] = avail.get(p[&quot;cement_type&quot;], 0) - q</text>
+<text x="14" y="260.0" class="ln">187</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">    return plan, excluded</text>
+<text x="14" y="275.5" class="ln">188</text>
+<text x="52" y="275.5" class="src" xml:space="preserve"></text>
+</g>
+<g transform="translate(810,1085.5)">
+<rect width="770" height="328.0" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#0b1b33"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#0b1b33"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#0b1b33">GLB</text>
+<text x="64" y="28" class="agent">Narrator Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROPOSAL AGENT</text>
+<text x="14" y="48" class="role">Explains verified numbers; an optional LLM rewrite is rejected if it adds any number.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/global_orchestrator/main.py:194</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#0b1b33" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="252.0" fill="#0b1b33"/>
+<text x="14" y="74.0" class="ln">194</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">def narrate(plan, context):</text>
+<text x="14" y="89.5" class="ln">195</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">    &quot;&quot;&quot;Template narration from verified numbers. Optional LLM rewrite, rejected if it adds any number...</text>
+<text x="14" y="105.0" class="ln">196</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    lines = []</text>
+<text x="14" y="120.5" class="ln">197</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    for p in plan:</text>
+<text x="14" y="136.0" class="ln">198</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">        pr = p[&quot;priority&quot;]</text>
+<text x="14" y="151.5" class="ln">199</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">        if not p.get(&quot;vessel&quot;):</text>
+<text x="14" y="167.0" class="ln">200</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">            lines.append(f&quot;{p[&#x27;plant_id&#x27;]} needs cement (stock-out in {pr[&#x27;stockout_days&#x27;]} days) but...</text>
+<text x="14" y="182.5" class="ln">201</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">                         f&quot;escalate to Shipment.&quot;)</text>
+<text x="14" y="198.0" class="ln">202</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">            continue</text>
+<text x="14" y="213.5" class="ln">203</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">        alt = &quot;, &quot;.join(p[&quot;alternatives&quot;]) or &quot;none&quot;</text>
+<text x="14" y="229.0" class="ln">204</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">        rng = f&quot; (+/- {p[&#x27;arrival_range_hours&#x27;]} h)&quot; if p.get(&quot;arrival_range_hours&quot;) is not None else &quot;&quot;</text>
+<text x="14" y="244.5" class="ln">205</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">        late = p[&quot;arrival_hours&quot;] / 24 &gt; pr[&quot;stockout_days&quot;]</text>
+<text x="14" y="260.0" class="ln">206</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">        timing = (f&quot;after the projected stock-out in {pr[&#x27;stockout_days&#x27;]} days, so a short supply ga...</text>
+<text x="14" y="275.5" class="ln">207</text>
+<text x="52" y="275.5" class="src" xml:space="preserve">                  f&quot;this is the fastest eligible vessel&quot; if late else f&quot;before the projected stock-ou...</text>
+<text x="14" y="291.0" class="ln">208</text>
+<text x="52" y="291.0" class="src" xml:space="preserve">        lines.append(f&quot;Send {p[&#x27;vessel&#x27;]} to {p[&#x27;plant_id&#x27;]} with {p[&#x27;quantity_ton&#x27;]} t {p[&#x27;cement_ty...</text>
+<text x="14" y="306.5" class="ln">209</text>
+<text x="52" y="306.5" class="src" xml:space="preserve">                     f&quot;{fmt_h(p[&#x27;arrival_hours&#x27;])}{rng}, {timing}. &quot;</text>
+</g>
+<g transform="translate(20,1433.5)">
+<rect width="770" height="250.5" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#92400e"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#92400e"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#92400e">DST</text>
+<text x="64" y="28" class="agent">Distribution Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROTOTYPE EXTENSION</text>
+<text x="14" y="48" class="role">Prototype extension: regional stock and orders at risk, bags converted to tons.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/distribution_api/main.py:81</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#92400e" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="174.5" fill="#92400e"/>
+<text x="14" y="74.0" class="ln">81</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">@app.post(&quot;/agents/distribution/run&quot;, tags=[&quot;agents&quot;])</text>
+<text x="14" y="89.5" class="ln">82</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">def distribution_agent(_=Depends(require(&quot;agents&quot;))):</text>
+<text x="14" y="105.0" class="ln">83</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="120.5" class="ln">84</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    reg = regions()</text>
+<text x="14" y="136.0" class="ln">85</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    at_risk = [r for r in reg if r[&quot;below_safety&quot;] or r[&quot;days_of_stock&quot;] &lt; 3 or (r[&quot;fill_rate&quot;] or 1)...</text>
+<text x="14" y="151.5" class="ln">86</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    signals = [{&quot;plant_id&quot;: r[&quot;served_by_plant&quot;], &quot;region&quot;: r[&quot;region_name&quot;],</text>
+<text x="14" y="167.0" class="ln">87</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">                &quot;open_order_ton&quot;: round(r[&quot;open_order_bags&quot;] / 20, 1), &quot;days_of_stock&quot;: r[&quot;days_of_st...</text>
+<text x="14" y="182.5" class="ln">88</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">    return {&quot;agent&quot;: &quot;Distribution Agent (extension)&quot;, &quot;enterprise&quot;: &quot;distribution&quot;, &quot;status&quot;: &quot;Compl...</text>
+<text x="14" y="198.0" class="ln">89</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">            &quot;inputs&quot;: {&quot;regions&quot;: len(reg), &quot;unit&quot;: &quot;bags (50 kg)&quot;},</text>
+<text x="14" y="213.5" class="ln">90</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">            &quot;outputs&quot;: {&quot;regions&quot;: reg, &quot;regions_at_risk&quot;: signals},</text>
+<text x="14" y="229.0" class="ln">91</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">            &quot;log&quot;: [f&quot;Checked {len(reg)} regions, 18 distributors&quot;, f&quot;{len(at_risk)} regions below sa...</text>
+</g>
+<g transform="translate(810,1433.5)">
+<rect width="770" height="281.5" fill="#ffffff" stroke="#c9d2de"/>
+<rect width="770" height="3" fill="#5b21b6"/>
+<rect x="14" y="14" width="40" height="17" fill="none" stroke="#5b21b6"/>
+<text x="34" y="27" text-anchor="middle" class="code" fill="#5b21b6">SUP</text>
+<text x="64" y="28" class="agent">Procurement Agent</text>
+<text x="756" y="28" text-anchor="end" class="ext">PROTOTYPE EXTENSION</text>
+<text x="14" y="48" class="role">Prototype extension: supply coverage, alternative suppliers, production impact.</text>
+<text x="756" y="48" text-anchor="end" class="file">backend/supplier_api/main.py:66</text>
+<line x1="0" y1="58" x2="770" y2="58" stroke="#e3e8ef"/>
+<rect x="0" y="62" width="770" height="17.5" fill="#5b21b6" fill-opacity="0.09"/>
+<rect x="0" y="62" width="3" height="205.5" fill="#5b21b6"/>
+<text x="14" y="74.0" class="ln">66</text>
+<text x="52" y="74.0" class="src" xml:space="preserve">@app.post(&quot;/agents/procurement/run&quot;, tags=[&quot;agents&quot;])</text>
+<text x="14" y="89.5" class="ln">67</text>
+<text x="52" y="89.5" class="src" xml:space="preserve">def procurement_agent(_=Depends(require(&quot;agents&quot;))):</text>
+<text x="14" y="105.0" class="ln">68</text>
+<text x="52" y="105.0" class="src" xml:space="preserve">    t0 = time.perf_counter()</text>
+<text x="14" y="120.5" class="ln">69</text>
+<text x="52" y="120.5" class="src" xml:space="preserve">    view, sups = supply_view(), csv(&quot;suppliers&quot;)</text>
+<text x="14" y="136.0" class="ln">70</text>
+<text x="52" y="136.0" class="src" xml:space="preserve">    alternatives, impact = [], None</text>
+<text x="14" y="151.5" class="ln">71</text>
+<text x="52" y="151.5" class="src" xml:space="preserve">    for m in view:</text>
+<text x="14" y="167.0" class="ln">72</text>
+<text x="52" y="167.0" class="src" xml:space="preserve">        if m[&quot;risk&quot;] == &quot;high&quot; or m[&quot;supply_coverage&quot;] &lt; 0.9:</text>
+<text x="14" y="182.5" class="ln">73</text>
+<text x="52" y="182.5" class="src" xml:space="preserve">            s = sups[sups.MATERIAL_CODE == m[&quot;material_code&quot;]].sort_values([&quot;AVAILABILITY_PCT&quot;, &quot;OTIF...</text>
+<text x="14" y="198.0" class="ln">74</text>
+<text x="52" y="198.0" class="src" xml:space="preserve">            alternatives.append({&quot;material&quot;: m[&quot;material&quot;], &quot;disrupted&quot;: s[s.RISK_FLAG == &quot;disrupted&quot;...</text>
+<text x="14" y="213.5" class="ln">75</text>
+<text x="52" y="213.5" class="src" xml:space="preserve">                                 &quot;recommended_alternative&quot;: s[s.RISK_FLAG != &quot;disrupted&quot;].SUPPLIER_NA...</text>
+<text x="14" y="229.0" class="ln">76</text>
+<text x="52" y="229.0" class="src" xml:space="preserve">                                 &quot;days_of_supply&quot;: m[&quot;days_of_supply&quot;]})</text>
+<text x="14" y="244.5" class="ln">77</text>
+<text x="52" y="244.5" class="src" xml:space="preserve">    crit = [m for m in view if m[&quot;critical&quot;]]</text>
+<text x="14" y="260.0" class="ln">78</text>
+<text x="52" y="260.0" class="src" xml:space="preserve">    worst = min(crit, key=lambda m: m[&quot;supply_coverage&quot;])</text>
+</g>
+</svg>
