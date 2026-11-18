@@ -21,6 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import httpx  # noqa: E402
 from fastapi import FastAPI, Header, HTTPException  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
 from shared import decision_engine as de  # noqa: E402
@@ -32,6 +33,8 @@ STATE_FILE = STORES / "orchestrator_state.json"
 
 app = FastAPI(title="Global Orchestrator", version="1.0",
               description="Global Agentic Control Center: orchestration, dispatch planning, narration, approvals, KPIs.")
+# The 3D Agent Office reads agent state from the browser; allow the local dashboard origin (read-only GETs).
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], allow_methods=["GET"], allow_headers=["*"])
 
 
 def now():

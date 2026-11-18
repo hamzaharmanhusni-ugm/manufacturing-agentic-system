@@ -12,3 +12,6 @@ docs/design-references/*.webp
 .impeccable/review/
 .impeccable/live/
 nul
+.impeccable/questions/
+# deck build script references local skill paths; kept locally only
+scripts/presentation/

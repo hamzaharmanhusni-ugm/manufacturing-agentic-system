@@ -20,6 +20,7 @@ primaryColor = "#38bdf8"
 
 [server]
 runOnSave = true
+enableStaticServing = true
 
 [client]
 toolbarMode = "minimal"

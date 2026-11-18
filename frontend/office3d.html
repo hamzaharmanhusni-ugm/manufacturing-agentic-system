@@ -1,0 +1,308 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="importmap">
+{"imports": {"three": "/app/static/three/three.module.js", "three/addons/": "/app/static/three/addons/"}}
+</script>
+<style>
+  :root { --ink:#0b1b33; --ink2:#3b4a63; --ink3:#5c6b82; --rule:#c9d2de; --ground:#f3f5f8; --live:#0e7490; --appr:#5b21b6; --alarm:#b91c1c; }
+  html, body { margin:0; height:100%; background:var(--ground); font-family: Archivo, "Segoe UI", Arial, sans-serif; color:var(--ink); overflow:hidden; }
+  #stage { position:absolute; inset:0; }
+  .lbl { font-size:11px; font-weight:700; color:var(--ink); background:#fff; border:1px solid var(--rule); padding:1px 6px; white-space:nowrap; pointer-events:none; }
+  .lbl small { display:block; font-weight:600; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink3); }
+  .lbl.s-run small { color:var(--live); } .lbl.s-appr small { color:var(--appr); } .lbl.s-fail small { color:var(--alarm); }
+  .zone { font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 8px; color:#fff; pointer-events:none; white-space:nowrap; }
+  .zone i { font-style:normal; font-weight:600; opacity:.85; margin-left:6px; letter-spacing:.02em; text-transform:none; }
+  #now { position:absolute; left:12px; top:12px; max-width:min(560px, 60%); background:#fff; border:1px solid var(--ink); padding:8px 11px; font-size:12.5px; line-height:1.4; }
+  #now .k { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); }
+  #panel { position:absolute; right:12px; top:12px; width:300px; background:#fff; border:1px solid var(--ink); padding:10px 12px; font-size:12.5px; line-height:1.45; display:none; }
+  #panel h3 { margin:0 0 2px; font-size:15px; }
+  #panel .k { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); margin-top:8px; }
+  #panel .x { position:absolute; right:8px; top:6px; cursor:pointer; border:0; background:none; font-size:16px; color:var(--ink2); }
+  #steps { position:absolute; left:12px; right:12px; bottom:12px; display:flex; border:1px solid var(--ink); background:#fff; }
+  #steps div { flex:1; padding:6px 8px; font-size:11.5px; border-left:1px solid var(--rule); color:var(--ink3); }
+  #steps div:first-child { border-left:0; }
+  #steps div b { display:block; font-size:10px; letter-spacing:.1em; color:var(--ink3); }
+  #steps div.on { background:#0b1b33; color:#fff; } #steps div.on b { color:#7dd3fc; }
+  #steps div.done { color:var(--ink); }
+  #hint { position:absolute; right:12px; bottom:64px; font-size:11px; color:var(--ink3); background:rgba(255,255,255,.85); padding:2px 6px; }
+  #err { position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:14px; color:var(--alarm); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="now"><div class="k">Live</div><div id="nowText">Waiting for agent activity. Run a scenario above to watch the agents work.</div></div>
+<div id="panel"><button class="x" id="closeP" aria-label="Close">×</button><div id="pBody"></div></div>
+<div id="steps">
+  <div data-i="0"><b>1 EVENT</b>Something changes</div>
+  <div data-i="1"><b>2 PLAN</b>Orchestrator assigns tasks</div>
+  <div data-i="2"><b>3 PARALLEL WORK</b>Agents in 2 to 4 enterprises</div>
+  <div data-i="3"><b>4 DECIDE</b>Dispatch Planner ranks (code)</div>
+  <div data-i="4"><b>5 EXPLAIN</b>Narrator (AI) explains</div>
+  <div data-i="5"><b>6 ACT</b>A person approves</div>
+</div>
+<div id="hint">Drag to rotate · scroll to zoom · click a robot to learn what it does</div>
+<div id="err"></div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+
+const ORCH = "__ORCH__";
+const ENT = { manufacturer: ["MFG", 0x1d4ed8, "Cement Manufacturing", ":8001"], shipping: ["SHP", 0x0e7490, "Shipping & Logistics", ":8002"],
+              distribution: ["DST", 0x92400e, "Distribution", ":8003"], supplier: ["SUP", 0x5b21b6, "Supplier & Procurement", ":8004"],
+              orchestrator: ["GLB", 0x0b1b33, "Global Orchestrator", ":8000"] };
+const ZONES = { orchestrator: [0, 0, 10, 8], manufacturer: [-13, -1, 11, 8], shipping: [12, -1, 7, 6], distribution: [-9, 10, 7, 5], supplier: [9, 10, 7, 5] };
+const SPOTS = {
+  "Orchestrator Agent": [0, -2.2], "Dispatch Planner Agent": [-3.2, 0.2], "Narrator Agent": [3.2, 0.2],
+  "Stock Monitoring Agent": [-16.5, -2.4], "ML Forecasting Agent": [-9.5, -2.4], "Demand & Priority Agent": [-13, 1.6],
+  "Fleet Tracking Agent": [12, -1], "Distribution Agent (extension)": [-9, 10], "Procurement Agent (extension)": [9, 10],
+};
+const HUMAN = [0, 2.9], BEACON = [0, -8];
+const STATUS_COL = { Running: 0x0891b2, "Waiting for response": 0xb45309, "Requires human approval": 0x5b21b6, Completed: 0x0b1b33, Failed: 0xb91c1c, Idle: 0x9aa8bb };
+const STATUS_CLS = { Running: "s-run", "Requires human approval": "s-appr", Failed: "s-fail" };
+const ANIM = { Idle: "Idle", Running: "Walking", "Waiting for response": "Idle", Completed: "ThumbsUp", Failed: "No", "Requires human approval": "Wave" };
+const LEARN = {
+  "Orchestrator Agent": ["Orchestrator-worker pattern", "Receives the event, writes a task plan and sends the tasks to several agents at once (fan-out), then collects their answers (fan-in). Agents never call each other; only the orchestrator decides the order."],
+  "Stock Monitoring Agent": ["Perceive, reason, act", "Perceives silo sensors (IIoT), reasons with a rule (level below 25 percent) and an ARIMA projection, and acts by emitting a low-stock event once."],
+  "ML Forecasting Agent": ["Learning agent", "Uses a trained LightGBM model to forecast 14 days of demand with a P10 to P90 range. A challenger model (TFT, simulated here) is compared on a backtest."],
+  "Demand & Priority Agent": ["Utility-based reasoning", "Turns sales, plan, price and margin into a priority score (grades 1 to 5, weighted). Price and margin stay inside its enterprise; only grades leave."],
+  "Fleet Tracking Agent": ["Agent in another company", "Lives in the shipping subsidiary's own API. It shares only GPS, status and ETA, under that company's data-sharing policy (governance)."],
+  "Dispatch Planner Agent": ["Deterministic decision engine", "Ranks vessels with SAW and assigns one vessel per plant. This is code, not an LLM: code decides."],
+  "Narrator Agent": ["LLM as explainer, with a guardrail", "Explains the computed plan in plain language. Any LLM text that introduces a number not in the facts is rejected: AI explains."],
+  "Distribution Agent (extension)": ["Extending the ecosystem", "Added by this prototype: a third enterprise reports regions at risk. New agents join without changing the existing ones."],
+  "Procurement Agent (extension)": ["Cross-enterprise impact", "Added by this prototype: a supplier shortage can lower production at the manufacturer, which the orchestrator propagates."],
+  "Human approver": ["Human in the loop", "Every dispatch waits for an authorised person to approve or reject. People act; the system only recommends."],
+};
+
+const stage = document.getElementById("stage");
+const W = () => stage.clientWidth, H = () => stage.clientHeight;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf3f5f8);
+scene.fog = new THREE.Fog(0xf3f5f8, 45, 80);
+const camera = new THREE.PerspectiveCamera(38, W() / H(), 0.1, 200);
+camera.position.set(0, 22, 27);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(W(), H());
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+const labels = new CSS2DRenderer();
+labels.setSize(W(), H());
+labels.domElement.style.position = "absolute"; labels.domElement.style.top = "0"; labels.domElement.style.pointerEvents = "none";
+stage.appendChild(labels.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 3.6); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.45; controls.minDistance = 12; controls.maxDistance = 60;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xc9d2de, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(-12, 26, 14); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 25, bottom: -25 });
+scene.add(sun);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(90, 70), new THREE.MeshStandardMaterial({ color: 0xeef2f7, roughness: 1 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const grid = new THREE.GridHelper(90, 45, 0xd8dfe8, 0xe3e8ef); grid.position.y = 0.01; scene.add(grid);
+
+function label(html, cls, y = 0) {
+  const d = document.createElement("div"); d.className = cls; d.innerHTML = html;
+  const o = new CSS2DObject(d); o.position.y = y; return o;
+}
+const P = ([x, z], y = 0) => new THREE.Vector3(x, y, z);
+const zoneCenter = {};
+for (const [k, [x, z, w, d]] of Object.entries(ZONES)) {
+  const [code, col, name, port] = ENT[k];
+  const plat = new THREE.Mesh(new THREE.BoxGeometry(w, 0.25, d), new THREE.MeshStandardMaterial({ color: k === "orchestrator" ? 0xffffff : 0xf8fafc, roughness: 0.9 }));
+  plat.position.set(x, 0.125, z); plat.receiveShadow = true; scene.add(plat);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(plat.geometry), new THREE.LineBasicMaterial({ color: col }));
+  edges.position.copy(plat.position); scene.add(edges);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(w, 0.27, 0.35), new THREE.MeshStandardMaterial({ color: col }));
+  band.position.set(x, 0.135, z + d / 2 - 0.175); scene.add(band);
+  const l = label(`${code} ${name}<i>${port}</i>`, "zone", 0); l.element.style.background = "#" + col.toString(16).padStart(6, "0");
+  l.position.set(x, 0.4, z + d / 2 + 0.55); scene.add(l);
+  zoneCenter[k] = new THREE.Vector3(x, 0.3, z);
+}
+// links from the hub to every enterprise: the A2A channels
+for (const k of ["manufacturer", "shipping", "distribution", "supplier"]) {
+  const pts = [zoneCenter.orchestrator.clone().setY(0.28), zoneCenter[k].clone().setY(0.28)];
+  const link = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0x9aa8bb, dashSize: 0.5, gapSize: 0.35 }));
+  link.computeLineDistances();
+  scene.add(link);
+}
+// event beacon
+const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0xb45309, emissive: 0x000000 }));
+beacon.position.set(BEACON[0], 1.1, BEACON[1]); beacon.castShadow = true; scene.add(beacon);
+const bl = label("Event bus<small>sensors, ERP, weather, voyage logs</small>", "lbl", 0); bl.position.set(BEACON[0], 2.8, BEACON[1]); scene.add(bl);
+
+// human approver: a person, not a robot
+const human = new THREE.Group();
+const desk = new THREE.Mesh(new THREE.BoxGeometry(3, 0.9, 1.2), new THREE.MeshStandardMaterial({ color: 0xffffff })); desk.position.set(0, 0.7, -0.9);
+const deskEdge = new THREE.LineSegments(new THREE.EdgesGeometry(desk.geometry), new THREE.LineBasicMaterial({ color: 0x0b1b33 })); deskEdge.position.copy(desk.position);
+const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.0, 6, 12), new THREE.MeshStandardMaterial({ color: 0x3b4a63 })); body.position.y = 1.15;
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 20, 16), new THREE.MeshStandardMaterial({ color: 0xd9a77e })); head.position.y = 2.15;
+const stamp = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), new THREE.MeshStandardMaterial({ color: 0x1d4ed8 })); stamp.position.set(0.6, 1.9, -0.9);
+for (const m of [desk, body, head, stamp]) m.castShadow = true;
+human.add(desk, deskEdge, body, head, stamp);
+human.position.set(HUMAN[0], 0.25, HUMAN[1]); human.rotation.y = Math.PI;
+scene.add(human);
+const hl = label("Human approver<small>people act</small>", "lbl", 0); hl.position.set(0, 3.2, 0); human.add(hl);
+human.userData = { name: "Human approver" };
+
+// robots
+const robots = {};
+const pickables = [human];
+const loader = new GLTFLoader();
+let template = null;
+loader.load("/app/static/models/RobotExpressive.glb", (g) => { template = g; build(); }, undefined,
+  () => { const e = document.getElementById("err"); e.style.display = "flex"; e.textContent = "Could not load the 3D model. Check that static serving is enabled."; });
+
+function build() {
+  for (const [name, spot] of Object.entries(SPOTS)) {
+    const host = name.startsWith("Stock") || name.startsWith("ML") || name.startsWith("Demand") ? "manufacturer" : name.startsWith("Fleet") ? "shipping"
+      : name.startsWith("Distribution") ? "distribution" : name.startsWith("Procurement") ? "supplier" : "orchestrator";
+    const m = SkeletonUtils.clone(template.scene);
+    m.scale.setScalar(0.5);
+    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); if (o.material.name === "Main") o.material.color.setHex(ENT[host][1]); } });
+    m.position.copy(P(spot, 0.25));
+    m.rotation.y = 0;  // face the viewer
+    scene.add(m);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.95, 40), new THREE.MeshBasicMaterial({ color: 0x9aa8bb, side: THREE.DoubleSide }));
+    ring.rotation.x = -Math.PI / 2; ring.position.copy(P(spot, 0.27)); scene.add(ring);
+    const tag = label(`${name.replace(" (extension)", "")}<small>Idle</small>`, "lbl", 0); tag.position.copy(P(spot, 3.0)); scene.add(tag);
+    const mixer = new THREE.AnimationMixer(m);
+    const actions = {};
+    for (const clip of template.animations) actions[clip.name] = mixer.clipAction(clip);
+    for (const once of ["ThumbsUp", "No", "Yes"]) if (actions[once]) { actions[once].setLoop(THREE.LoopOnce); actions[once].clampWhenFinished = true; }
+    const r = { name, host, model: m, ring, tag, mixer, actions, current: null, status: "Idle" };
+    mixer.addEventListener("finished", () => play(r, "Idle"));
+    play(r, "Idle");
+    m.traverse((o) => { o.userData.robot = name; });
+    robots[name] = r; pickables.push(m);
+  }
+  poll();
+}
+
+function play(r, clip) {
+  const next = r.actions[clip] || r.actions.Idle;
+  if (r.current === next) return;
+  if (r.current) r.current.fadeOut(0.3);
+  next.reset().setEffectiveWeight(1).fadeIn(0.3).play();
+  r.current = next;
+}
+
+function setStatus(r, a) {
+  r.info = a;
+  if (r.status === a.status) return;
+  r.status = a.status;
+  r.ring.material.color.setHex(STATUS_COL[a.status] ?? 0x9aa8bb);
+  r.tag.element.className = "lbl " + (STATUS_CLS[a.status] || "");
+  r.tag.element.innerHTML = `${r.name.replace(" (extension)", "")}<small>${a.status}</small>`;
+  play(r, ANIM[a.status] || "Idle");
+}
+
+// messages fly as envelopes between the speakers
+const flights = [];
+function where(name, ent) {
+  if (robots[name]) return robots[name].model.position.clone().setY(1.6);
+  if (name === "Event Bus") return P(BEACON, 2.4);
+  if (name === "Management" || name === "Global Control Center") return P(HUMAN, 2.2);
+  if (ent && zoneCenter[ent]) return zoneCenter[ent].clone().setY(1.2);
+  if (ent === "global" || ent === "management") return P(HUMAN, 2.2);
+  return zoneCenter.orchestrator.clone().setY(1.2);
+}
+function fly(m) {
+  const from = where(m.from, m.from_enterprise), to = where(m.to, m.to_enterprise);
+  const col = (ENT[m.from_enterprise] || ENT[{ "event-bus": "orchestrator", global: "orchestrator", management: "orchestrator" }[m.from_enterprise] || "orchestrator"])[1];
+  const env = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 0.42), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: col, emissiveIntensity: 0.25 }));
+  const e2 = new THREE.LineSegments(new THREE.EdgesGeometry(env.geometry), new THREE.LineBasicMaterial({ color: col }));
+  env.add(e2); env.castShadow = true; scene.add(env);
+  const dist = from.distanceTo(to);
+  flights.push({ env, from, to, t: 0, dur: Math.min(2.2, 0.6 + dist / 14), arc: Math.min(5, 1 + dist / 5) });
+  if (m.type === "decision") { stamp.material.color.setHex(m.content.startsWith("Approved") ? 0x1d4ed8 : 0xb91c1c); stampT = 0; }
+  if (m.type === "event") beaconT = 0;
+}
+let stampT = 9, beaconT = 9;
+
+const seen = new Set();
+let primed = false, latestRun = null;
+async function poll() {
+  try {
+    const [agents, msgs, runs] = await Promise.all([fetch(ORCH + "/agents").then((r) => r.json()), fetch(ORCH + "/messages?limit=60").then((r) => r.json()),
+      fetch(ORCH + "/runs").then((r) => r.json())]);
+    for (const a of agents) if (robots[a.name]) setStatus(robots[a.name], a);
+    const fresh = [];
+    for (const m of msgs.slice().reverse()) { const k = m.ts + m.from + m.to + m.content; if (!seen.has(k)) { seen.add(k); if (primed) fresh.push(m); } }
+    fresh.forEach((m, i) => setTimeout(() => { fly(m); say(m); }, i * 260));
+    if (!primed && msgs.length) say(msgs[0], true);
+    primed = true;
+    if (runs.length) { latestRun = await fetch(ORCH + "/runs/" + runs[0].id).then((r) => r.json()); stepper(latestRun); }
+  } catch (e) { document.getElementById("nowText").textContent = "Orchestrator not reachable at " + ORCH + ". Start the stack with python run_all.py."; }
+  setTimeout(poll, 1000);
+}
+function say(m, old) {
+  document.getElementById("nowText").innerHTML = `<b>${m.from}</b> → <b>${m.to}</b> (${m.type})${old ? " · last message" : ""}<br>${m.content}`;
+}
+function stepper(run) {
+  const seg = run.steps.slice(run.steps.map((s) => s.agent).lastIndexOf("Event Detected") >= 0 ? run.steps.map((s) => s.agent).lastIndexOf("Event Detected") : 0);
+  const idx = { "Event Detected": 0, "Orchestrator Agent": 1, "Dispatch Planner Agent": 3, "Narrator Agent": 4, "Human Approval": 5 };
+  let cur = 0;
+  for (const s of seg) cur = Math.max(cur, idx[s.agent] ?? 2);
+  const pending = (run.decisions || []).length && run.status === "Completed";
+  if (run.status === "Completed" && !pending) cur = 6;
+  document.querySelectorAll("#steps div").forEach((d) => { const i = +d.dataset.i; d.className = i === cur ? "on" : i < cur ? "done" : ""; });
+}
+
+// click a robot to learn what it does
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+renderer.domElement.addEventListener("click", (ev) => {
+  const b = renderer.domElement.getBoundingClientRect();
+  mouse.set(((ev.clientX - b.left) / b.width) * 2 - 1, -((ev.clientY - b.top) / b.height) * 2 + 1);
+  ray.setFromCamera(mouse, camera);
+  const hit = ray.intersectObjects(pickables, true)[0];
+  if (!hit) return;
+  let o = hit.object; while (o && !o.userData.robot && o.userData.name !== "Human approver") o = o.parent;
+  const name = o ? (o.userData.robot || o.userData.name) : null;
+  if (name) show(name);
+});
+document.getElementById("closeP").onclick = () => (document.getElementById("panel").style.display = "none");
+function show(name) {
+  const r = robots[name], a = r?.info || {}, [concept, text] = LEARN[name];
+  const ent = r ? ENT[r.host] : ["MGT", 0x3b4a63, "Management"];
+  document.getElementById("pBody").innerHTML =
+    `<h3>${name}</h3><span style="font-size:10px;font-weight:700;letter-spacing:.1em;border:1px solid #${ent[1].toString(16).padStart(6, "0")};color:#${ent[1].toString(16).padStart(6, "0")};padding:0 5px">${ent[0]}</span> ${ent[2]}` +
+    (r ? `<div class="k">Status</div>${a.status || "Idle"}${a.last_run ? " · last run " + a.last_run.slice(11, 19) + (a.last_duration_ms ? " · " + Math.round(a.last_duration_ms) + " ms" : "") : ""}
+          <div class="k">Responsibility</div>${a.role || ""}<div class="k">Latest output</div>${a.last_log || "Not run yet"}` : "") +
+    `<div class="k">Concept: ${concept}</div>${text}`;
+  document.getElementById("panel").style.display = "block";
+}
+
+const clock = new THREE.Clock();
+function tick() {
+  const dt = clock.getDelta();
+  for (const r of Object.values(robots)) {
+    r.mixer.update(dt);
+    if (r.status === "Running") r.ring.scale.setScalar(1 + 0.12 * Math.sin(clock.elapsedTime * 6));
+    else r.ring.scale.setScalar(1);
+  }
+  for (let i = flights.length - 1; i >= 0; i--) {
+    const f = flights[i]; f.t += dt / f.dur;
+    const t = Math.min(f.t, 1), p = f.from.clone().lerp(f.to, t); p.y += Math.sin(Math.PI * t) * f.arc;
+    f.env.position.copy(p); f.env.rotation.y += dt * 3;
+    if (f.t >= 1) { scene.remove(f.env); flights.splice(i, 1); }
+  }
+  stampT += dt; stamp.position.y = stampT < 0.6 ? 1.9 - Math.sin((stampT / 0.6) * Math.PI) * 0.7 : 1.9;
+  beaconT += dt; beacon.material.emissive.setHex(beaconT < 1.2 && Math.floor(beaconT * 6) % 2 === 0 ? 0x7c2d12 : 0x000000);
+  controls.update();
+  renderer.render(scene, camera); labels.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+addEventListener("resize", () => { camera.aspect = W() / H(); camera.updateProjectionMatrix(); renderer.setSize(W(), H()); labels.setSize(W(), H()); });
+</script>
+</body>
+</html>
