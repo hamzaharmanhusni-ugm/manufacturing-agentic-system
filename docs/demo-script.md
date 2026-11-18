@@ -8,6 +8,10 @@ Durasi sekitar 12 menit. Jalankan `python run_all.py`, buka http://localhost:300
 - Tunjukkan buku besar enterprise: setiap enterprise memiliki API, port, basis data, dan agent sendiri. Klik salah satu tautan untuk membuka dashboard enterprise.
 - Sampaikan prinsip: *code decides, AI explains, people act*.
 
+## 0b. Agent Office 3D (1 menit, opsional untuk pembukaan)
+
+Buka **Agent Office 3D**, pilih **2. Low stock at PP C**, tekan **Run and watch**. Tunjukkan suar event, amplop yang dikirim Orchestrator ke empat robot sekaligus, robot yang berjalan saat bekerja, lalu Dispatch Planner yang melambai menunggu persetujuan. Klik figur manusia untuk menampilkan konsep human in the loop. Lanjutkan ke Control Center untuk menandatangani docket.
+
 ## 1. Operasi normal (1 menit)
 
 Pilih **1. Normal operation**, tekan **Run**. Docket terisi kotak demi kotak: Kotak 1 event, Kotak 2 sampai 5 diisi bersamaan oleh empat agent dari dua enterprise, Kotak 6 rencana dispatch, Kotak 7 penjelasan Narrator, Kotak 8 persetujuan.

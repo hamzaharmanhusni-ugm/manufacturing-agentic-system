@@ -12,6 +12,10 @@ Sebuah pabrik semen mengirim semen curah dari satu load port ke sembilan packing
 
 Seluruh data bersifat **sintetis**. Angka performa model menggambarkan kecocokan pada data sintetis, bukan performa model nyata.
 
+![Control Center](docs/screenshots/control-center.png)
+
+![Agent Office 3D](docs/screenshots/agent-office-panel.png)
+
 ![Peta kode agent](docs/agent-code-map.svg)
 
 ## Isi repositori
@@ -25,7 +29,7 @@ Seluruh data bersifat **sintetis**. Angka performa model menggambarkan kecocokan
 | `backend/global_orchestrator/` | Port 8000. Orchestrator, Dispatch Planner, Narrator, skenario, approval, KPI |
 | `shared/` | Decision engine (SAW, Pers. 14), model ML, keamanan dan RBAC, konektor basis data |
 | `data/generate.py` | Generator data sintetis berbasis seed |
-| `frontend/` | Dashboard Streamlit (port 3000) |
+| `frontend/` | Dashboard Streamlit (port 3000), termasuk Agent Office 3D (`office3d.html`, three.js) |
 | `scripts/` | Smoke test end-to-end dan pembuat gambar peta kode agent |
 | `tests/` | Uji unit decision engine |
 | `docs/` | Arsitektur, dokumentasi API, skrip demo, presentasi, riset API publik |
@@ -91,7 +95,8 @@ Smoke test memeriksa kesehatan 4 API, autentikasi 401/403, enam skenario, ekseku
 - [Dokumentasi API](docs/api.md): endpoint setiap layanan dan contoh pemanggilan.
 - [Skrip demo](docs/demo-script.md): urutan presentasi enam skenario.
 - [Panduan pengguna](docs/user-guide.md): cara membaca dashboard.
-- [Presentasi](docs/presentation/): slide sistem agentic.
+- [Presentasi](docs/presentation/Manufacturing-Agentic-System.pdf): 16 slide sistem agentic (PPTX dan PDF).
+- [Sistem desain](DESIGN.md): gaya visual "Dispatch Manifest".
 - [Riset API publik](docs/public-api-research.md): kandidat sumber data nyata untuk integrasi berikutnya.
 - [Roadmap](ROADMAP.md): checklist pengerjaan.
 
@@ -102,3 +107,4 @@ Smoke test memeriksa kesehatan 4 API, autentikasi 401/403, enam skenario, ekseku
 - Narrator menggunakan template deterministik. LLM aktif apabila `ANTHROPIC_API_KEY` diisi, dan keluarannya ditolak bila memuat angka baru.
 - Notifikasi Telegram/WhatsApp disimulasikan di panel notifikasi.
 - Distribution dan Supplier merupakan ekstensi prototipe, bukan bagian proposal asli.
+- Agent Office 3D membutuhkan browser dengan WebGL. Model robot (RobotExpressive, CC0) dan three.js (MIT) disajikan lokal dari `frontend/static/`.

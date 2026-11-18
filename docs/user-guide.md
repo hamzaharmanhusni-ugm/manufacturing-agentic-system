@@ -30,6 +30,21 @@ Tanda status: kotak hitam berarti selesai, kotak cyan berkedip berarti sedang be
 
 Pada Kotak 6, angka kedatangan berwarna merah berarti kapal diperkirakan tiba setelah stok habis. Baris kuning menandai rencana yang berubah setelah disrupsi, dengan nama kapal lama dicoret.
 
+## Agent Office 3D
+
+Halaman pembelajaran yang menampilkan sembilan agent sebagai robot di kantor bersama. Setiap platform berwarna adalah satu enterprise; platform navy di tengah adalah Global Orchestrator.
+
+| Yang terlihat | Artinya |
+|---|---|
+| Suar oranye berkedip | Event masuk (sensor silo, penjualan, keterlambatan kapal, cuaca) |
+| Robot berjalan dengan cincin cyan berdenyut | Agent sedang bekerja di API enterprise-nya |
+| Amplop terbang antar-platform | Pesan antar-agent yang tercatat di orchestrator |
+| Robot mengacungkan jempol | Agent selesai dan menandatangani hasilnya |
+| Robot melambai, cincin ungu | Keputusan menunggu persetujuan manusia |
+| Figur manusia memberi stempel | Persetujuan atau penolakan oleh peran berwenang |
+
+Klik robot atau figur manusia untuk membuka panel berisi status, tanggung jawab, keluaran terakhir, dan konsep agentic yang diperankan (misalnya orchestrator-worker, perceive-reason-act, human in the loop). Bilah di bawah menandai langkah orkestrasi yang sedang berlangsung. Tombol **Run and watch** menjalankan skenario sambil tetap di halaman ini.
+
 ## Halaman lain
 
 - **Simulation Center**: memilih dan menjalankan enam skenario, melihat docket, linimasa paralel, serta tujuh bagian hasil (kondisi awal, event, agent, penalaran, keputusan, perubahan dashboard, dampak KPI).
