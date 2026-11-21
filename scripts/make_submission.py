@@ -19,8 +19,8 @@ Mata kuliah: AI Agentic Technology Systems for Digital Enterprise Ecosystem
 Dikemas: {date.today():%d-%m-%Y}
 
 ISI
-01_Laporan       Laporan lengkap (DOCX dan PDF), disusun berdasarkan materi kuliah Bab 1 sampai 5,
-                 termasuk proses agentic coding.
+01_Laporan       Laporan ringkas (DOCX dan PDF): landasan teori, perancangan, demonstrasi aplikasi,
+                 pengujian, dan proses agentic coding.
 02_Presentasi    Slide presentasi kelas (PPTX dan PDF) beserta catatan pembicara.
 03_Source_Code   Kode sumber lengkap: 4 API enterprise, Global Orchestrator, dashboard Streamlit,
                  decision engine, model ML, data sintetis, uji otomatis, agent dan skill Claude Code.
@@ -48,7 +48,7 @@ CATATAN
   Aset pihak ketiga dan lisensinya tercantum di 03_Source_Code/frontend/static/THIRD_PARTY.md.
 """
 
-DOCS = ["README.md", "ROADMAP.md", "PRODUCT.md", "DESIGN.md", "docs/architecture.md", "docs/api.md", "docs/user-guide.md",
+DOCS = ["README.md", "ROADMAP.md", "docs/architecture.md", "docs/api.md", "docs/user-guide.md",
         "docs/demo-script.md", "docs/agentic-coding-process.md", "docs/public-api-research.md", "docs/agent-code-map.svg"]
 
 
