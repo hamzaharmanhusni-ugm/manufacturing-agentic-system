@@ -63,7 +63,8 @@ def main():
             z.write(f, f"02_Presentasi/{f.name}")
         with zipfile.ZipFile(io.BytesIO(archive)) as src:
             for info in src.infolist():
-                if not info.is_dir():
+                # ponytail: docs media already sit in 01/02/04, skip the duplicate copy inside the source tree
+                if not info.is_dir() and not info.filename.startswith(("docs/screenshots/", "docs/report/", "docs/presentation/", "docs/diagrams/")):
                     z.writestr(f"03_Source_Code/{info.filename}", src.read(info))
         for rel in DOCS:
             z.write(ROOT / rel, f"04_Dokumentasi/{Path(rel).name}")
