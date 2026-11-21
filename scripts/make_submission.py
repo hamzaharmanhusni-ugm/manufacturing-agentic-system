@@ -59,7 +59,7 @@ def main():
         for f in sorted((ROOT / "docs" / "report").glob("Laporan-*.*")):
             if f.suffix.lower() in (".docx", ".pdf"):
                 z.write(f, f"01_Laporan/{f.name}")
-        for f in sorted((ROOT / "docs" / "presentation").glob("Manufacturing-Agentic-System.*")):
+        for f in sorted((ROOT / "docs" / "presentation").glob("Manufacturing-Agentic-System*.*")):
             z.write(f, f"02_Presentasi/{f.name}")
         with zipfile.ZipFile(io.BytesIO(archive)) as src:
             for info in src.infolist():
