@@ -2,48 +2,120 @@
 <html>
 <head>
 <meta charset="utf-8">
+<link rel="stylesheet" href="/app/static/leaflet/leaflet.css">
+<script src="/app/static/leaflet/leaflet.js"></script>
 <script type="importmap">
 {"imports": {"three": "/app/static/three/three.module.js", "three/addons/": "/app/static/three/addons/"}}
 </script>
 <style>
-  :root { --ink:#0b1b33; --ink2:#3b4a63; --ink3:#5c6b82; --rule:#c9d2de; --ground:#f3f5f8; --live:#0e7490; --appr:#5b21b6; --alarm:#b91c1c; }
-  html, body { margin:0; height:100%; background:var(--ground); font-family: Archivo, "Segoe UI", Arial, sans-serif; color:var(--ink); overflow:hidden; }
+  :root { --ink:#0b1b33; --ink2:#3b4a63; --ink3:#5c6b82; --rule:#c9d2de; --rule2:#e3e8ef; --ground:#f3f5f8; --act:#1d4ed8;
+          --live:#0e7490; --livef:#0891b2; --appr:#5b21b6; --alarm:#b91c1c; --wait:#b45309; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--ground); font-family: Archivo, "Segoe UI", Arial, sans-serif; color:var(--ink); overflow:hidden; font-variant-numeric: tabular-nums; }
+  #app { display:grid; grid-template-rows:auto auto 1fr auto; grid-template-areas:'bar' 'appr' 'main' 'bottom'; height:100%; gap:8px; }
+  #bar { grid-area:bar; } #approvals { grid-area:appr; } #main { grid-area:main; } #bottom { grid-area:bottom; }
+  button { font:inherit; cursor:pointer; border-radius:2px; }
+  /* top bar: the simulated clock */
+  #bar { display:flex; align-items:center; gap:10px; background:var(--ink); color:#fff; padding:8px 12px; }
+  #clock { font-size:20px; font-weight:750; letter-spacing:-.01em; min-width:150px; }
+  #bar .k { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#9fb2cf; }
+  #bar button { border:1px solid #9fb2cf; background:transparent; color:#fff; padding:5px 12px; font-weight:650; }
+  #bar button.primary { background:var(--act); border-color:var(--act); }
+  #bar select { font:inherit; background:#13284a; color:#fff; border:1px solid #9fb2cf; padding:4px 6px; border-radius:2px; }
+  #state { flex:1; font-size:13px; color:#cfe3ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #state b { color:#fff; }
+  #state .dot { display:inline-block; width:9px; height:9px; margin-right:6px; vertical-align:0; background:#9fb2cf; }
+  #state .dot.run { background:var(--livef); } #state .dot.appr { background:#a78bfa; } #state .dot.pause { background:#9fb2cf; }
+  /* approvals strip: Box 8 lives here too */
+  #approvals { display:none; border:1px solid var(--appr); background:#faf7ff; padding:6px 10px; }
+  #approvals .h { font-size:10px; font-weight:700; letter-spacing:.1em; color:var(--appr); margin-bottom:4px; }
+  .dec { display:flex; align-items:center; gap:10px; padding:4px 0; border-top:1px solid #e9e3fb; font-size:13px; }
+  .dec:first-of-type { border-top:0; }
+  .dec .t { flex:1; } .dec .t small { display:block; color:var(--ink3); font-size:11.5px; }
+  .dec .ok { background:var(--act); color:#fff; border:1px solid var(--act); padding:4px 14px; font-weight:650; }
+  .dec .no { background:#fff; color:var(--ink); border:1px solid var(--ink); padding:4px 14px; font-weight:650; margin-left:18px; }
+  .dec button:disabled { opacity:.45; cursor:not-allowed; }
+  /* main: 3D office left, sea map right */
+  #main { display:grid; grid-template-columns: 57% 43%; gap:8px; min-height:0; }
+  .pane { position:relative; border:1px solid var(--rule); background:#fff; min-height:0; overflow:hidden; }
+  .pane .cap { position:absolute; left:0; top:0; z-index:500; background:var(--ink); color:#fff; font-size:10px; font-weight:700; letter-spacing:.1em; padding:3px 8px; }
   #stage { position:absolute; inset:0; }
-  .lbl { font-size:11px; font-weight:700; color:var(--ink); background:#fff; border:1px solid var(--rule); padding:1px 6px; white-space:nowrap; pointer-events:none; }
-  .lbl small { display:block; font-weight:600; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink3); }
+  #map { position:absolute; inset:0; background:#dfe8f1; }
+  #map .leaflet-tile-pane { filter: grayscale(1) contrast(.85) brightness(1.08); }
+  .lbl { font-size:10.5px; font-weight:700; color:var(--ink); background:#fff; border:1px solid var(--rule); padding:1px 5px; white-space:nowrap; pointer-events:none; }
+  .lbl small { display:block; font-weight:600; font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink3); }
   .lbl.s-run small { color:var(--live); } .lbl.s-appr small { color:var(--appr); } .lbl.s-fail small { color:var(--alarm); }
-  .zone { font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 8px; color:#fff; pointer-events:none; white-space:nowrap; }
-  .zone i { font-style:normal; font-weight:600; opacity:.85; margin-left:6px; letter-spacing:.02em; text-transform:none; }
-  #now { position:absolute; left:12px; top:12px; max-width:min(560px, 60%); background:#fff; border:1px solid var(--ink); padding:8px 11px; font-size:12.5px; line-height:1.4; }
-  #now .k { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); }
-  #panel { position:absolute; right:12px; top:12px; width:300px; background:#fff; border:1px solid var(--ink); padding:10px 12px; font-size:12.5px; line-height:1.45; display:none; }
+  .zone { font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; color:#fff; pointer-events:none; white-space:nowrap; }
+  /* the agent's own screen above its head */
+  .scr { width:150px; background:#0b1b33; color:#d7f3fb; border:1px solid #24406b; padding:5px 7px; font-size:10.5px; line-height:1.35; pointer-events:none; box-shadow:0 2px 8px rgba(11,27,51,.25); }
+  .scr .tt { font-size:9px; font-weight:700; letter-spacing:.1em; color:#7dd3fc; margin-bottom:3px; text-transform:uppercase; }
+  .scr .row { display:flex; justify-content:space-between; gap:6px; white-space:nowrap; }
+  .scr .bar { height:4px; background:#24406b; margin:1px 0 3px; } .scr .bar i { display:block; height:4px; background:#22d3ee; }
+  .scr .bar i.low { background:#f87171; }
+  #panel { position:absolute; right:10px; top:26px; width:290px; z-index:5; background:#fff; border:1px solid var(--ink); padding:9px 11px; font-size:12.5px; line-height:1.45; display:none; }
   #panel h3 { margin:0 0 2px; font-size:15px; }
-  #panel .k { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); margin-top:8px; }
-  #panel .x { position:absolute; right:8px; top:6px; cursor:pointer; border:0; background:none; font-size:16px; color:var(--ink2); }
-  #steps { position:absolute; left:12px; right:12px; bottom:12px; display:flex; border:1px solid var(--ink); background:#fff; }
-  #steps div { flex:1; padding:6px 8px; font-size:11.5px; border-left:1px solid var(--rule); color:var(--ink3); }
+  #panel .k { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); margin-top:7px; }
+  #panel .x { position:absolute; right:8px; top:4px; border:0; background:none; font-size:16px; color:var(--ink2); }
+  #hint { position:absolute; right:8px; bottom:6px; font-size:10.5px; color:var(--ink3); background:rgba(255,255,255,.85); padding:2px 6px; }
+  /* map markers */
+  .pm { background:#fff; border:1px solid var(--ink); padding:2px 4px 3px; font-size:10px; font-weight:700; color:var(--ink); white-space:nowrap; }
+  .pm .gs { display:flex; gap:3px; align-items:flex-end; margin-top:2px; }
+  .pm .g { width:9px; height:26px; border:1px solid var(--ink3); position:relative; background:#eef2f7; }
+  .pm .g i { position:absolute; left:0; right:0; bottom:0; background:var(--livef); }
+  .pm .g i.low { background:var(--alarm); } .pm .g.out { border-color:var(--alarm); }
+  .pm .d { font-size:9px; font-weight:600; color:var(--ink3); }
+  .pm.flash { box-shadow:0 0 0 3px #22d3ee; }
+  .lp { background:var(--act); color:#fff; font-size:10px; font-weight:800; padding:2px 6px; letter-spacing:.06em; white-space:nowrap; }
+  .vs svg { overflow:visible; }
+  .leaflet-tooltip { font-family:inherit; font-size:11px; border-radius:0; }
+  #legend { position:absolute; left:8px; bottom:8px; z-index:500; background:rgba(255,255,255,.92); border:1px solid var(--rule); padding:4px 7px; font-size:10.5px; color:var(--ink2); }
+  #legend span { display:inline-block; width:9px; height:9px; margin:0 3px 0 8px; vertical-align:0; }
+  /* bottom: steps + story log */
+  #bottom { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+  #steps { display:flex; border:1px solid var(--ink); background:#fff; }
+  #steps div { flex:1; padding:5px 7px; font-size:11px; border-left:1px solid var(--rule); color:var(--ink3); }
   #steps div:first-child { border-left:0; }
-  #steps div b { display:block; font-size:10px; letter-spacing:.1em; color:var(--ink3); }
-  #steps div.on { background:#0b1b33; color:#fff; } #steps div.on b { color:#7dd3fc; }
-  #steps div.done { color:var(--ink); }
-  #hint { position:absolute; right:12px; bottom:64px; font-size:11px; color:var(--ink3); background:rgba(255,255,255,.85); padding:2px 6px; }
-  #err { position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:14px; color:var(--alarm); }
+  #steps div b { display:block; font-size:9.5px; letter-spacing:.1em; color:var(--ink3); }
+  #steps div.on { background:var(--ink); color:#fff; } #steps div.on b { color:#7dd3fc; } #steps div.done { color:var(--ink); }
+  #log { border:1px solid var(--rule); background:#fff; height:86px; overflow:hidden; padding:3px 8px; font-size:11.5px; }
+  #log div { display:grid; grid-template-columns: 92px 1fr; gap:8px; padding:2px 0; border-bottom:1px solid var(--rule2); }
+  #log div span { color:var(--ink3); }
+  #log .event b, #log .disruption b { color:var(--wait); } #log .stockout b { color:var(--alarm); } #log .arrive b { color:var(--live); } #log .depart b { color:var(--act); }
+  #err { position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:14px; color:var(--alarm); background:rgba(255,255,255,.9); }
 </style>
 </head>
 <body>
-<div id="stage"></div>
-<div id="now"><div class="k">Live</div><div id="nowText">Waiting for agent activity. Run a scenario above to watch the agents work.</div></div>
-<div id="panel"><button class="x" id="closeP" aria-label="Close">×</button><div id="pBody"></div></div>
-<div id="steps">
-  <div data-i="0"><b>1 EVENT</b>Something changes</div>
-  <div data-i="1"><b>2 PLAN</b>Orchestrator assigns tasks</div>
-  <div data-i="2"><b>3 PARALLEL WORK</b>Agents in 2 to 4 enterprises</div>
-  <div data-i="3"><b>4 DECIDE</b>Dispatch Planner ranks (code)</div>
-  <div data-i="4"><b>5 EXPLAIN</b>Narrator (AI) explains</div>
-  <div data-i="5"><b>6 ACT</b>A person approves</div>
+<div id="app">
+  <div id="bar">
+    <div><div class="k">Simulated clock</div><div id="clock">-</div></div>
+    <button id="play" class="primary">Play</button>
+    <label class="k" for="speed">Speed</label>
+    <select id="speed"><option value="0.5">0.5 h/s</option><option value="1" selected>1 h/s</option><option value="2">2 h/s</option><option value="4">4 h/s</option></select>
+    <div id="state"><span class="dot pause"></span>Press Play: plants start selling, silos drain, vessels sail.</div>
+    <button id="screens">Screens on</button>
+    <button id="reset">Reset story</button>
+  </div>
+  <div id="approvals"><div class="h">BOX 8 · AUTHORISATION · THE CLOCK WAITS FOR YOUR SIGNATURE</div><div id="decs"></div></div>
+  <div id="main">
+    <div class="pane"><div class="cap">AGENT OFFICE · WHO IS THINKING</div><div id="stage"></div>
+      <div id="panel"><button class="x" id="closeP" aria-label="Close">×</button><div id="pBody"></div></div>
+      <div id="hint">Drag to rotate · scroll to zoom · click a robot to learn what it does</div><div id="err"></div></div>
+    <div class="pane"><div class="cap">THE REAL WORLD · SILOS AND VESSELS</div><div id="map"></div>
+      <div id="legend">Vessel <span style="background:#0891b2"></span>laden <span style="background:#9aa8bb"></span>empty <span style="background:#0b1b33"></span>at port · Silo <span style="background:#0891b2"></span>ok <span style="background:#b91c1c"></span>below 25 %</div></div>
+  </div>
+  <div id="bottom">
+    <div id="steps">
+      <div data-i="0"><b>1 EVENT</b>A sensor or a service reports</div>
+      <div data-i="1"><b>2 PLAN</b>Orchestrator assigns</div>
+      <div data-i="2"><b>3 WORK</b>Agents in parallel</div>
+      <div data-i="3"><b>4 DECIDE</b>Code ranks ships</div>
+      <div data-i="4"><b>5 EXPLAIN</b>AI explains</div>
+      <div data-i="5"><b>6 ACT</b>A person signs</div>
+      <div data-i="6"><b>7 WORLD</b>Ships sail, silos refill</div>
+    </div>
+    <div id="log"></div>
+  </div>
 </div>
-<div id="hint">Drag to rotate · scroll to zoom · click a robot to learn what it does</div>
-<div id="err"></div>
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -51,95 +123,79 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
-const ORCH = "__ORCH__";
-const ENT = { manufacturer: ["MFG", 0x1d4ed8, "Cement Manufacturing", ":8001"], shipping: ["SHP", 0x0e7490, "Shipping & Logistics", ":8002"],
-              distribution: ["DST", 0x92400e, "Distribution", ":8003"], supplier: ["SUP", 0x5b21b6, "Supplier & Procurement", ":8004"],
-              orchestrator: ["GLB", 0x0b1b33, "Global Orchestrator", ":8000"] };
+const ORCH = "__ORCH__", ROLE = "__ROLE__", CAN_APPROVE = __CAN_APPROVE__, CAN_SIM = __CAN_SIM__;
+const ENT = { manufacturer: ["MFG", 0x1d4ed8], shipping: ["SHP", 0x0e7490], distribution: ["DST", 0x92400e], supplier: ["SUP", 0x5b21b6], orchestrator: ["GLB", 0x0b1b33] };
 const ZONES = { orchestrator: [0, 0, 10, 8], manufacturer: [-13, -1, 11, 8], shipping: [12, -1, 7, 6], distribution: [-9, 10, 7, 5], supplier: [9, 10, 7, 5] };
+const ZNAME = { orchestrator: "GLB Global", manufacturer: "MFG Manufacturer", shipping: "SHP Shipping", distribution: "DST Distribution", supplier: "SUP Supplier" };
 const SPOTS = {
   "Orchestrator Agent": [0, -2.2], "Dispatch Planner Agent": [-3.2, 0.2], "Narrator Agent": [3.2, 0.2],
   "Stock Monitoring Agent": [-16.5, -2.4], "ML Forecasting Agent": [-9.5, -2.4], "Demand & Priority Agent": [-13, 1.6],
   "Fleet Tracking Agent": [12, -1], "Distribution Agent (extension)": [-9, 10], "Procurement Agent (extension)": [9, 10],
 };
+const HOST = (n) => n.startsWith("Stock") || n.startsWith("ML") || n.startsWith("Demand") ? "manufacturer" : n.startsWith("Fleet") ? "shipping"
+  : n.startsWith("Distribution") ? "distribution" : n.startsWith("Procurement") ? "supplier" : "orchestrator";
 const HUMAN = [0, 2.9], BEACON = [0, -8];
 const STATUS_COL = { Running: 0x0891b2, "Waiting for response": 0xb45309, "Requires human approval": 0x5b21b6, Completed: 0x0b1b33, Failed: 0xb91c1c, Idle: 0x9aa8bb };
 const STATUS_CLS = { Running: "s-run", "Requires human approval": "s-appr", Failed: "s-fail" };
 const ANIM = { Idle: "Idle", Running: "Walking", "Waiting for response": "Idle", Completed: "ThumbsUp", Failed: "No", "Requires human approval": "Wave" };
 const LEARN = {
-  "Orchestrator Agent": ["Orchestrator-worker pattern", "Receives the event, writes a task plan and sends the tasks to several agents at once (fan-out), then collects their answers (fan-in). Agents never call each other; only the orchestrator decides the order."],
-  "Stock Monitoring Agent": ["Perceive, reason, act", "Perceives silo sensors (IIoT), reasons with a rule (level below 25 percent) and an ARIMA projection, and acts by emitting a low-stock event once."],
-  "ML Forecasting Agent": ["Learning agent", "Uses a trained LightGBM model to forecast 14 days of demand with a P10 to P90 range. A challenger model (TFT, simulated here) is compared on a backtest."],
-  "Demand & Priority Agent": ["Utility-based reasoning", "Turns sales, plan, price and margin into a priority score (grades 1 to 5, weighted). Price and margin stay inside its enterprise; only grades leave."],
-  "Fleet Tracking Agent": ["Agent in another company", "Lives in the shipping subsidiary's own API. It shares only GPS, status and ETA, under that company's data-sharing policy (governance)."],
-  "Dispatch Planner Agent": ["Deterministic decision engine", "Ranks vessels with SAW and assigns one vessel per plant. This is code, not an LLM: code decides."],
-  "Narrator Agent": ["LLM as explainer, with a guardrail", "Explains the computed plan in plain language. Any LLM text that introduces a number not in the facts is rejected: AI explains."],
-  "Distribution Agent (extension)": ["Extending the ecosystem", "Added by this prototype: a third enterprise reports regions at risk. New agents join without changing the existing ones."],
-  "Procurement Agent (extension)": ["Cross-enterprise impact", "Added by this prototype: a supplier shortage can lower production at the manufacturer, which the orchestrator propagates."],
-  "Human approver": ["Human in the loop", "Every dispatch waits for an authorised person to approve or reject. People act; the system only recommends."],
+  "Orchestrator Agent": ["Orchestrator-worker pattern", "Receives the event, writes a task plan and sends the tasks to several agents at once (fan-out), then collects their answers (fan-in). Agents never call each other."],
+  "Stock Monitoring Agent": ["Perceive, reason, act", "Perceives silo sensors, reasons with a rule (below 25 percent) and an ARIMA projection, and acts by emitting a low-stock event once."],
+  "ML Forecasting Agent": ["Learning agent", "A trained LightGBM model forecasts 14 days of demand with a P10 to P90 range; a challenger model is compared on a backtest."],
+  "Demand & Priority Agent": ["Utility-based reasoning", "Turns sales, plan, price and margin into a priority score. Price and margin stay inside its enterprise; only grades leave."],
+  "Fleet Tracking Agent": ["Agent in another company", "Lives in the shipping subsidiary's API and shares only GPS, status and ETA under that company's policy."],
+  "Dispatch Planner Agent": ["Deterministic decision engine", "Ranks vessels with SAW and assigns one vessel per plant. Code, not an LLM: code decides."],
+  "Narrator Agent": ["LLM as explainer, with a guardrail", "Explains the computed plan; any LLM text that adds a number not in the facts is rejected: AI explains."],
+  "Distribution Agent (extension)": ["Extending the ecosystem", "A third enterprise reports regions at risk; new agents join without changing the others."],
+  "Procurement Agent (extension)": ["Cross-enterprise impact", "A supplier shortage lowers production at the manufacturer, which the orchestrator propagates."],
+  "Human approver": ["Human in the loop", "Every dispatch waits for an authorised person. People act; the system only recommends. The clock waits too."],
 };
+const $ = (id) => document.getElementById(id);
+const esc = (x) => String(x ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const post = (path, body) => fetch(ORCH + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}) }).then((r) => r.json());
 
-const stage = document.getElementById("stage");
+// ---------------------------------------------------------------- 3D office
+const stage = $("stage");
 const W = () => stage.clientWidth, H = () => stage.clientHeight;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf3f5f8);
-scene.fog = new THREE.Fog(0xf3f5f8, 45, 80);
 const camera = new THREE.PerspectiveCamera(38, W() / H(), 0.1, 200);
-camera.position.set(0, 22, 27);
+camera.position.set(-1.5, 31, 33);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(W(), H());
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(W(), H());
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);
-const labels = new CSS2DRenderer();
-labels.setSize(W(), H());
-labels.domElement.style.position = "absolute"; labels.domElement.style.top = "0"; labels.domElement.style.pointerEvents = "none";
+const labels = new CSS2DRenderer(); labels.setSize(W(), H());
+Object.assign(labels.domElement.style, { position: "absolute", top: "0", pointerEvents: "none" });
 stage.appendChild(labels.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0, 3.6); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.45; controls.minDistance = 12; controls.maxDistance = 60;
-
+controls.target.set(-1.5, 0, 2.6); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.45; controls.minDistance = 12; controls.maxDistance = 60;
 scene.add(new THREE.HemisphereLight(0xffffff, 0xc9d2de, 1.6));
-const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-sun.position.set(-12, 26, 14); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 25, bottom: -25 });
-scene.add(sun);
-
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(-12, 26, 14); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 25, bottom: -25 }); scene.add(sun);
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(90, 70), new THREE.MeshStandardMaterial({ color: 0xeef2f7, roughness: 1 }));
 floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
 const grid = new THREE.GridHelper(90, 45, 0xd8dfe8, 0xe3e8ef); grid.position.y = 0.01; scene.add(grid);
-
-function label(html, cls, y = 0) {
-  const d = document.createElement("div"); d.className = cls; d.innerHTML = html;
-  const o = new CSS2DObject(d); o.position.y = y; return o;
-}
+const label = (html, cls) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; return new CSS2DObject(d); };
 const P = ([x, z], y = 0) => new THREE.Vector3(x, y, z);
 const zoneCenter = {};
 for (const [k, [x, z, w, d]] of Object.entries(ZONES)) {
-  const [code, col, name, port] = ENT[k];
-  const plat = new THREE.Mesh(new THREE.BoxGeometry(w, 0.25, d), new THREE.MeshStandardMaterial({ color: k === "orchestrator" ? 0xffffff : 0xf8fafc, roughness: 0.9 }));
+  const col = ENT[k][1];
+  const plat = new THREE.Mesh(new THREE.BoxGeometry(w, 0.25, d), new THREE.MeshStandardMaterial({ color: k === "orchestrator" ? 0xffffff : 0xf8fafc }));
   plat.position.set(x, 0.125, z); plat.receiveShadow = true; scene.add(plat);
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(plat.geometry), new THREE.LineBasicMaterial({ color: col }));
-  edges.position.copy(plat.position); scene.add(edges);
-  const band = new THREE.Mesh(new THREE.BoxGeometry(w, 0.27, 0.35), new THREE.MeshStandardMaterial({ color: col }));
-  band.position.set(x, 0.135, z + d / 2 - 0.175); scene.add(band);
-  const l = label(`${code} ${name}<i>${port}</i>`, "zone", 0); l.element.style.background = "#" + col.toString(16).padStart(6, "0");
-  l.position.set(x, 0.4, z + d / 2 + 0.55); scene.add(l);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(plat.geometry), new THREE.LineBasicMaterial({ color: col })); edges.position.copy(plat.position); scene.add(edges);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(w, 0.27, 0.35), new THREE.MeshStandardMaterial({ color: col })); band.position.set(x, 0.135, z + d / 2 - 0.175); scene.add(band);
+  const l = label(ZNAME[k], "zone"); l.element.style.background = "#" + col.toString(16).padStart(6, "0"); l.position.set(x, 0.4, z + d / 2 + 0.55); scene.add(l);
   zoneCenter[k] = new THREE.Vector3(x, 0.3, z);
 }
-// links from the hub to every enterprise: the A2A channels
 for (const k of ["manufacturer", "shipping", "distribution", "supplier"]) {
-  const pts = [zoneCenter.orchestrator.clone().setY(0.28), zoneCenter[k].clone().setY(0.28)];
-  const link = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0x9aa8bb, dashSize: 0.5, gapSize: 0.35 }));
-  link.computeLineDistances();
-  scene.add(link);
+  const link = new THREE.Line(new THREE.BufferGeometry().setFromPoints([zoneCenter.orchestrator.clone().setY(0.28), zoneCenter[k].clone().setY(0.28)]),
+    new THREE.LineDashedMaterial({ color: 0x9aa8bb, dashSize: 0.5, gapSize: 0.35 }));
+  link.computeLineDistances(); scene.add(link);
 }
-// event beacon
-const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0xb45309, emissive: 0x000000 }));
+const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2.2, 6), new THREE.MeshStandardMaterial({ color: 0xb45309 }));
 beacon.position.set(BEACON[0], 1.1, BEACON[1]); beacon.castShadow = true; scene.add(beacon);
-const bl = label("Event bus<small>sensors, ERP, weather, voyage logs</small>", "lbl", 0); bl.position.set(BEACON[0], 2.8, BEACON[1]); scene.add(bl);
-
-// human approver: a person, not a robot
+const bl = label("Event bus<small>sensors, ERP, weather, voyage logs</small>", "lbl"); bl.position.set(BEACON[0], 2.8, BEACON[1]); scene.add(bl);
 const human = new THREE.Group();
 const desk = new THREE.Mesh(new THREE.BoxGeometry(3, 0.9, 1.2), new THREE.MeshStandardMaterial({ color: 0xffffff })); desk.position.set(0, 0.7, -0.9);
 const deskEdge = new THREE.LineSegments(new THREE.EdgesGeometry(desk.geometry), new THREE.LineBasicMaterial({ color: 0x0b1b33 })); deskEdge.position.copy(desk.position);
@@ -147,54 +203,43 @@ const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.0, 6, 12), new THR
 const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 20, 16), new THREE.MeshStandardMaterial({ color: 0xd9a77e })); head.position.y = 2.15;
 const stamp = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), new THREE.MeshStandardMaterial({ color: 0x1d4ed8 })); stamp.position.set(0.6, 1.9, -0.9);
 for (const m of [desk, body, head, stamp]) m.castShadow = true;
-human.add(desk, deskEdge, body, head, stamp);
-human.position.set(HUMAN[0], 0.25, HUMAN[1]); human.rotation.y = Math.PI;
-scene.add(human);
-const hl = label("Human approver<small>people act</small>", "lbl", 0); hl.position.set(0, 3.2, 0); human.add(hl);
+human.add(desk, deskEdge, body, head, stamp); human.position.set(HUMAN[0], 0.25, HUMAN[1]); human.rotation.y = Math.PI; scene.add(human);
+const hl = label("Human approver<small>people act</small>", "lbl"); hl.position.set(0, 3.2, 0); human.add(hl);
 human.userData = { name: "Human approver" };
 
-// robots
-const robots = {};
-const pickables = [human];
-const loader = new GLTFLoader();
-let template = null;
-loader.load("/app/static/models/RobotExpressive.glb", (g) => { template = g; build(); }, undefined,
-  () => { const e = document.getElementById("err"); e.style.display = "flex"; e.textContent = "Could not load the 3D model. Check that static serving is enabled."; });
-
+const robots = {}, pickables = [human];
+let template = null, screensOn = true;
+new GLTFLoader().load("/app/static/models/RobotExpressive.glb", (g) => { template = g; build(); }, undefined,
+  () => { $("err").style.display = "flex"; $("err").textContent = "Could not load the 3D model. Check that Streamlit static serving is enabled."; });
 function build() {
   for (const [name, spot] of Object.entries(SPOTS)) {
-    const host = name.startsWith("Stock") || name.startsWith("ML") || name.startsWith("Demand") ? "manufacturer" : name.startsWith("Fleet") ? "shipping"
-      : name.startsWith("Distribution") ? "distribution" : name.startsWith("Procurement") ? "supplier" : "orchestrator";
+    const host = HOST(name);
     const m = SkeletonUtils.clone(template.scene);
     m.scale.setScalar(0.5);
-    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); if (o.material.name === "Main") o.material.color.setHex(ENT[host][1]); } });
-    m.position.copy(P(spot, 0.25));
-    m.rotation.y = 0;  // face the viewer
-    scene.add(m);
+    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); if (o.material.name === "Main") o.material.color.setHex(ENT[host][1]); } o.userData.robot = name; });
+    m.position.copy(P(spot, 0.25)); scene.add(m);
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.95, 40), new THREE.MeshBasicMaterial({ color: 0x9aa8bb, side: THREE.DoubleSide }));
     ring.rotation.x = -Math.PI / 2; ring.position.copy(P(spot, 0.27)); scene.add(ring);
-    const tag = label(`${name.replace(" (extension)", "")}<small>Idle</small>`, "lbl", 0); tag.position.copy(P(spot, 3.0)); scene.add(tag);
-    const mixer = new THREE.AnimationMixer(m);
-    const actions = {};
+    const tag = label(`${name.replace(" (extension)", "")}<small>Idle</small>`, "lbl"); tag.position.copy(P(spot, 3.0)); scene.add(tag);
+    const SCREEN_Y = { "Orchestrator Agent": 8.2, "ML Forecasting Agent": 8.4, "Stock Monitoring Agent": 5.2, "Demand & Priority Agent": 4.4,
+                       "Dispatch Planner Agent": 5.2, "Narrator Agent": 5.2, "Fleet Tracking Agent": 5.2 };
+    const SCREEN_DX = { "Stock Monitoring Agent": -2.2, "ML Forecasting Agent": 1.6, "Demand & Priority Agent": 0.6 };
+    const screen = label("", "scr"); screen.position.copy(P([spot[0] + (SCREEN_DX[name] || 0), spot[1]], SCREEN_Y[name] ?? 5.2)); screen.visible = false; scene.add(screen);
+    const mixer = new THREE.AnimationMixer(m), actions = {};
     for (const clip of template.animations) actions[clip.name] = mixer.clipAction(clip);
     for (const once of ["ThumbsUp", "No", "Yes"]) if (actions[once]) { actions[once].setLoop(THREE.LoopOnce); actions[once].clampWhenFinished = true; }
-    const r = { name, host, model: m, ring, tag, mixer, actions, current: null, status: "Idle" };
+    const r = { name, host, model: m, ring, tag, screen, mixer, actions, current: null, status: "Idle" };
     mixer.addEventListener("finished", () => play(r, "Idle"));
-    play(r, "Idle");
-    m.traverse((o) => { o.userData.robot = name; });
-    robots[name] = r; pickables.push(m);
+    play(r, "Idle"); robots[name] = r; pickables.push(m);
   }
   poll();
 }
-
 function play(r, clip) {
   const next = r.actions[clip] || r.actions.Idle;
   if (r.current === next) return;
   if (r.current) r.current.fadeOut(0.3);
-  next.reset().setEffectiveWeight(1).fadeIn(0.3).play();
-  r.current = next;
+  next.reset().setEffectiveWeight(1).fadeIn(0.3).play(); r.current = next;
 }
-
 function setStatus(r, a) {
   r.info = a;
   if (r.status === a.status) return;
@@ -205,57 +250,164 @@ function setStatus(r, a) {
   play(r, ANIM[a.status] || "Idle");
 }
 
-// messages fly as envelopes between the speakers
+// what each agent is looking at: built only from the agent's own output in the latest run
+const bar = (frac, low) => `<div class="bar"><i class="${low ? "low" : ""}" style="width:${Math.max(3, Math.min(100, frac * 100)).toFixed(0)}%"></i></div>`;
+function screenHtml(name, step, run) {
+  const o = (step && step.outputs) || {};
+  const t = (s) => `<div class="tt">${s}</div>`;
+  try {
+    if (name === "Stock Monitoring Agent") return t("Silo sensors") + (o.series || []).slice().sort((a, b) => a.stockout_days - b.stockout_days).slice(0, 3)
+      .map((s) => `<div class="row"><span>${s.plant_id} ${s.cement_type}</span><span>${(s.level_pct * 100).toFixed(0)}% · ${s.stockout_days} d</span></div>${bar(s.level_pct, s.level_pct < 0.25)}`).join("");
+    if (name === "ML Forecasting Agent") { const top = (o.summary_14d || []).slice().sort((a, b) => b.p50 - a.p50).slice(0, 3); const mx = top[0]?.p50 || 1;
+      return t("14-day demand forecast") + top.map((s) => `<div class="row"><span>${s.plant_id} ${s.cement_type}</span><span>${(s.p50 / 1000).toFixed(1)} kt</span></div>${bar(s.p50 / mx)}`).join("") + `<div class="row"><span>WAPE</span><span>${o.metrics?.wape_champion}</span></div>`; }
+    if (name === "Fleet Tracking Agent") { const fl = o.fleet || []; const av = fl.filter((v) => v.available_in_h != null && !v.assigned_plant).length;
+      return t("Fleet GPS") + `<div class="row"><span>Available</span><span>${av} of ${fl.length}</span></div><div class="row"><span>Sailing not advised</span><span>${(o.sailing_not_advised || []).join(", ") || "none"}</span></div><div class="row"><span>High failure risk</span><span>${(o.high_failure_risk || []).length}</span></div>`; }
+    if (name === "Demand & Priority Agent") return t("Plant priority (Eq. 14)") + (o.ranking || []).slice(0, 3).map((r) => `<div class="row"><span>#${r.rank} ${r.plant_id}</span><span>${r.priority_score}</span></div>${bar(r.priority_score / 5)}`).join("");
+    if (name === "Dispatch Planner Agent") return t("SAW ranking result") + (run.plan || []).filter((p) => p.vessel).slice(0, 3).map((p) => `<div class="row"><span>${p.vessel} → ${p.plant_id}</span><span>${(p.arrival_hours / 24).toFixed(1)} d</span></div>`).join("");
+    if (name === "Narrator Agent") return t("Explaining") + esc((run.narrative || "").split(":")[0].slice(0, 70));
+    if (name === "Orchestrator Agent") return t("Task plan") + esc((o.task_plan || []).length + " agents in parallel") + "<br>" + esc(((run.steps || [])[0]?.outputs?.event || "").slice(0, 90));
+    if (name.startsWith("Distribution")) return t("Regions") + `<div class="row"><span>At risk</span><span>${(o.regions_at_risk || []).length}</span></div>`;
+    if (name.startsWith("Procurement")) return t("Raw materials") + (o.production_impact ? `Clinker short: production x${o.production_impact.production_capacity_factor}` : "No production impact");
+  } catch (e) { /* show nothing rather than wrong numbers */ }
+  return "";
+}
+function updateScreens(run) {
+  const by = {}; for (const s of run.steps || []) by[s.agent] = s;
+  for (const r of Object.values(robots)) {
+    const s = by[r.name];
+    const html = s && s.status !== "Running" ? screenHtml(r.name, s, run) : (s ? `<div class="tt">Working</div>${esc(r.info?.role || "")}` : "");
+    r.screen.element.innerHTML = html;
+    r.screen.visible = screensOn && !!html;
+  }
+}
+
+// envelopes: real agent-to-agent messages
 const flights = [];
 function where(name, ent) {
   if (robots[name]) return robots[name].model.position.clone().setY(1.6);
   if (name === "Event Bus") return P(BEACON, 2.4);
   if (name === "Management" || name === "Global Control Center") return P(HUMAN, 2.2);
   if (ent && zoneCenter[ent]) return zoneCenter[ent].clone().setY(1.2);
-  if (ent === "global" || ent === "management") return P(HUMAN, 2.2);
   return zoneCenter.orchestrator.clone().setY(1.2);
 }
+let stampT = 9, beaconT = 9;
 function fly(m) {
   const from = where(m.from, m.from_enterprise), to = where(m.to, m.to_enterprise);
-  const col = (ENT[m.from_enterprise] || ENT[{ "event-bus": "orchestrator", global: "orchestrator", management: "orchestrator" }[m.from_enterprise] || "orchestrator"])[1];
+  const col = (ENT[m.from_enterprise] || ENT.orchestrator)[1];
   const env = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 0.42), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: col, emissiveIntensity: 0.25 }));
-  const e2 = new THREE.LineSegments(new THREE.EdgesGeometry(env.geometry), new THREE.LineBasicMaterial({ color: col }));
-  env.add(e2); env.castShadow = true; scene.add(env);
+  env.add(new THREE.LineSegments(new THREE.EdgesGeometry(env.geometry), new THREE.LineBasicMaterial({ color: col }))); scene.add(env);
   const dist = from.distanceTo(to);
   flights.push({ env, from, to, t: 0, dur: Math.min(2.2, 0.6 + dist / 14), arc: Math.min(5, 1 + dist / 5) });
   if (m.type === "decision") { stamp.material.color.setHex(m.content.startsWith("Approved") ? 0x1d4ed8 : 0xb91c1c); stampT = 0; }
   if (m.type === "event") beaconT = 0;
 }
-let stampT = 9, beaconT = 9;
 
-const seen = new Set();
-let primed = false, latestRun = null;
+// ---------------------------------------------------------------- the real world: Leaflet sea map
+const map = L.map("map", { zoomControl: true, attributionControl: true }).setView([-4.2, 118.2], 5);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors", maxZoom: 9 }).addTo(map);
+const LP = [-6.9, 112.05];
+L.marker(LP, { icon: L.divIcon({ className: "", html: '<div class="lp">LOAD PORT</div>', iconAnchor: [34, 9] }) }).addTo(map);
+const plantMk = {}, plantRoute = {}, vesselMk = {}, vesselLine = {};
+function plantHtml(rows, flash) {
+  const name = rows[0].plant_id;
+  const g = rows.map((p) => `<span class="g ${p.stocked_out ? "out" : ""}" title="${p.cement_type} ${(p.level_pct * 100).toFixed(0)}%"><i class="${p.low ? "low" : ""}" style="height:${(p.level_pct * 100).toFixed(0)}%"></i></span>`).join("");
+  const worst = rows.slice().sort((a, b) => a.level_pct - b.level_pct)[0];
+  return `<div class="pm ${flash ? "flash" : ""}">${name}<div class="gs">${g}<span class="d">${(worst.level_pct * 100).toFixed(0)}%<br>${worst.days_left ?? "-"} d</span></div></div>`;
+}
+const prevLevel = {};
+let framed = false;
+function drawPlants(plants, storm) {
+  const by = {}; for (const p of plants) (by[p.plant_id] ||= []).push(p);
+  for (const [pid, rows] of Object.entries(by)) {
+    const ll = [rows[0].lat, rows[0].lon];
+    const lvl = rows.reduce((a, r) => a + r.level_pct, 0);
+    const flash = prevLevel[pid] != null && lvl > prevLevel[pid] + 0.05;
+    prevLevel[pid] = lvl;
+    const icon = L.divIcon({ className: "", html: plantHtml(rows, flash), iconAnchor: [18, 46] });
+    if (!plantMk[pid]) {
+      plantMk[pid] = L.marker(ll, { icon }).addTo(map);
+      plantRoute[pid] = L.polyline([LP, ll], { color: "#9aa8bb", weight: 1, dashArray: "3 4" }).addTo(map);
+    } else plantMk[pid].setIcon(icon);
+    plantRoute[pid].setStyle(storm.includes(pid) ? { color: "#b91c1c", weight: 3, dashArray: "6 4" } : { color: "#9aa8bb", weight: 1, dashArray: "3 4" });
+  }
+  if (!framed && Object.keys(plantMk).length && $("map").clientHeight) {
+    map.invalidateSize();
+    map.fitBounds(L.latLngBounds([LP, ...Object.values(plantMk).map((m) => m.getLatLng())]), { padding: [40, 30] });
+    framed = true;
+  }
+}
+const VCOL = { laden: "#0891b2", ballast: "#9aa8bb", discharging: "#0b1b33", loading: "#0b1b33", anchored: "#0b1b33", maintenance: "#c9d2de" };
+function shipIcon(v) {
+  const c = VCOL[v.mode] || "#0b1b33", big = v.mode === "laden" || v.assigned;
+  const s = big ? 18 : 13;
+  return L.divIcon({ className: "vs", iconSize: [s, s], iconAnchor: [s / 2, s / 2],
+    html: `<svg width="${s}" height="${s}" viewBox="-10 -10 20 20"><g transform="rotate(${(v.mode === "laden" || v.mode === "ballast") ? (v.heading - 90) : 0})"><path d="M8 0 L-7 -5 L-4 0 L-7 5 Z" fill="${c}" stroke="#fff" stroke-width="1.2"/></g></svg>` });
+}
+const targets = {};
+function drawVessels(vs) {
+  for (const v of vs) {
+    const ll = [v.lat, v.lon];
+    const tip = `<b>${v.vessel}</b> · ${v.mode}${v.destination ? " → " + v.destination : ""}${v.cargo_ton ? " · " + Math.round(v.cargo_ton).toLocaleString() + " t " + (v.cargo_type || "") : ""}${v.assigned ? " · next: " + v.assigned : ""}${v.delay_hours ? " · delay " + v.delay_hours + " h" : ""}`;
+    if (!vesselMk[v.vessel]) { vesselMk[v.vessel] = L.marker(ll, { icon: shipIcon(v), zIndexOffset: 500 }).addTo(map).bindTooltip(tip); targets[v.vessel] = ll; }
+    else { vesselMk[v.vessel].setIcon(shipIcon(v)); vesselMk[v.vessel].setTooltipContent(tip); targets[v.vessel] = ll; }
+    const dest = v.mode === "laden" && plantMk[v.destination] ? plantMk[v.destination].getLatLng() : null;
+    if (dest) {
+      if (!vesselLine[v.vessel]) vesselLine[v.vessel] = L.polyline([ll, dest], { color: "#0891b2", weight: 2, dashArray: "5 5" }).addTo(map);
+      else vesselLine[v.vessel].setLatLngs([vesselMk[v.vessel].getLatLng(), dest]);
+    } else if (vesselLine[v.vessel]) { map.removeLayer(vesselLine[v.vessel]); delete vesselLine[v.vessel]; }
+  }
+}
+
+// ---------------------------------------------------------------- polling the orchestrator
+const seen = new Set(); let primed = false, lastRunKey = "", lastRun = null;
 async function poll() {
   try {
-    const [agents, msgs, runs] = await Promise.all([fetch(ORCH + "/agents").then((r) => r.json()), fetch(ORCH + "/messages?limit=60").then((r) => r.json()),
-      fetch(ORCH + "/runs").then((r) => r.json())]);
+    const [agents, msgs, runs, world] = await Promise.all(["/agents", "/messages?limit=60", "/runs", "/world"].map((p) => fetch(ORCH + p).then((r) => r.json())));
     for (const a of agents) if (robots[a.name]) setStatus(robots[a.name], a);
     const fresh = [];
     for (const m of msgs.slice().reverse()) { const k = m.ts + m.from + m.to + m.content; if (!seen.has(k)) { seen.add(k); if (primed) fresh.push(m); } }
-    fresh.forEach((m, i) => setTimeout(() => { fly(m); say(m); }, i * 260));
-    if (!primed && msgs.length) say(msgs[0], true);
+    fresh.forEach((m, i) => setTimeout(() => fly(m), i * 260));
     primed = true;
-    if (runs.length) { latestRun = await fetch(ORCH + "/runs/" + runs[0].id).then((r) => r.json()); stepper(latestRun); }
-  } catch (e) { document.getElementById("nowText").textContent = "Orchestrator not reachable at " + ORCH + ". Start the stack with python run_all.py."; }
+    if (runs.length) {
+      const key = runs[0].id + runs[0].status + (agents.find((a) => a.status === "Running")?.name || "");
+      if (key !== lastRunKey) { lastRunKey = key; lastRun = await fetch(ORCH + "/runs/" + runs[0].id).then((r) => r.json()); updateScreens(lastRun); }
+      if (lastRun) stepper(lastRun, world);
+    }
+    drawWorld(world);
+  } catch (e) { $("state").innerHTML = `<span class="dot"></span>Orchestrator not reachable at ${esc(ORCH)}. Start the stack with python run_all.py.`; }
   setTimeout(poll, 1000);
 }
-function say(m, old) {
-  document.getElementById("nowText").innerHTML = `<b>${m.from}</b> → <b>${m.to}</b> (${m.type})${old ? " · last message" : ""}<br>${m.content}`;
+function drawWorld(w) {
+  $("clock").textContent = w.clock;
+  $("play").textContent = w.running ? "Pause" : "Play";
+  $("play").disabled = !CAN_SIM; $("reset").disabled = !CAN_SIM;
+  const dot = w.pause_reason ? (w.pending.length ? "appr" : w.pause_reason.startsWith("Agents") ? "run" : "pause") : "run";
+  $("state").innerHTML = `<span class="dot ${dot}"></span>` + (w.running && !w.pause_reason ? "<b>Clock running.</b> Plants sell cement, silos drain, vessels sail." : `<b>${w.running ? "Clock waiting:" : "Clock stopped:"}</b> ${esc(w.pause_reason || "")}`);
+  drawPlants(w.plants, w.storm_routes || []); drawVessels(w.vessels);
+  const ap = $("approvals"); ap.style.display = w.pending.length ? "block" : "none";
+  $("decs").innerHTML = w.pending.map((d) => `<div class="dec"><div class="t">${esc(d.action)} <b style="color:#5b21b6">${esc(d.priority)}</b><small>${esc(d.expected_impact)}</small></div>
+    <button class="ok" data-id="${d.id}" ${CAN_APPROVE ? "" : "disabled title='Your role cannot sign'"}>Approve</button><button class="no" data-id="${d.id}" ${CAN_APPROVE ? "" : "disabled"}>Reject</button></div>`).join("");
+  $("log").innerHTML = w.log.slice(0, 5).map((e) => `<div class="${e.kind}"><span>${esc(e.clock)}</span><b>${esc(e.text)}</b></div>`).join("") || '<div><span></span>The story log fills as the clock runs.</div>';
 }
-function stepper(run) {
-  const seg = run.steps.slice(run.steps.map((s) => s.agent).lastIndexOf("Event Detected") >= 0 ? run.steps.map((s) => s.agent).lastIndexOf("Event Detected") : 0);
+function stepper(run, world) {
   const idx = { "Event Detected": 0, "Orchestrator Agent": 1, "Dispatch Planner Agent": 3, "Narrator Agent": 4, "Human Approval": 5 };
+  const steps = run.steps || [];
+  const lastEv = steps.map((s) => s.agent).lastIndexOf("Event Detected");
   let cur = 0;
-  for (const s of seg) cur = Math.max(cur, idx[s.agent] ?? 2);
-  const pending = (run.decisions || []).length && run.status === "Completed";
-  if (run.status === "Completed" && !pending) cur = 6;
+  for (const s of steps.slice(Math.max(0, lastEv))) cur = Math.max(cur, idx[s.agent] ?? 2);
+  if (run.status === "Completed" && !(world.pending || []).length) cur = world.running ? 6 : 5;
   document.querySelectorAll("#steps div").forEach((d) => { const i = +d.dataset.i; d.className = i === cur ? "on" : i < cur ? "done" : ""; });
 }
+$("decs").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  b.disabled = true;
+  await post(`/decisions/${b.dataset.id}/${b.classList.contains("ok") ? "approve" : "reject"}`, { role: ROLE });
+});
+$("play").onclick = async () => { const w = await fetch(ORCH + "/world").then((r) => r.json()); await post(w.running ? "/world/pause" : "/world/play"); };
+$("speed").onchange = (e) => post("/world/speed", { speed: +e.target.value });
+$("reset").onclick = async () => { $("reset").textContent = "Resetting..."; await post("/world/pause"); await post("/reset", { role: ROLE }); $("reset").textContent = "Reset story";
+  for (const k of Object.keys(prevLevel)) delete prevLevel[k]; };
+$("screens").onclick = () => { screensOn = !screensOn; $("screens").textContent = screensOn ? "Screens on" : "Screens off"; for (const r of Object.values(robots)) r.screen.visible = screensOn && !!r.screen.element.innerHTML; };
 
 // click a robot to learn what it does
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
@@ -263,32 +415,26 @@ renderer.domElement.addEventListener("click", (ev) => {
   const b = renderer.domElement.getBoundingClientRect();
   mouse.set(((ev.clientX - b.left) / b.width) * 2 - 1, -((ev.clientY - b.top) / b.height) * 2 + 1);
   ray.setFromCamera(mouse, camera);
-  const hit = ray.intersectObjects(pickables, true)[0];
-  if (!hit) return;
+  const hit = ray.intersectObjects(pickables, true)[0]; if (!hit) return;
   let o = hit.object; while (o && !o.userData.robot && o.userData.name !== "Human approver") o = o.parent;
-  const name = o ? (o.userData.robot || o.userData.name) : null;
-  if (name) show(name);
+  if (o) show(o.userData.robot || o.userData.name);
 });
-document.getElementById("closeP").onclick = () => (document.getElementById("panel").style.display = "none");
+$("closeP").onclick = () => ($("panel").style.display = "none");
 function show(name) {
   const r = robots[name], a = r?.info || {}, [concept, text] = LEARN[name];
-  const ent = r ? ENT[r.host] : ["MGT", 0x3b4a63, "Management"];
-  document.getElementById("pBody").innerHTML =
-    `<h3>${name}</h3><span style="font-size:10px;font-weight:700;letter-spacing:.1em;border:1px solid #${ent[1].toString(16).padStart(6, "0")};color:#${ent[1].toString(16).padStart(6, "0")};padding:0 5px">${ent[0]}</span> ${ent[2]}` +
-    (r ? `<div class="k">Status</div>${a.status || "Idle"}${a.last_run ? " · last run " + a.last_run.slice(11, 19) + (a.last_duration_ms ? " · " + Math.round(a.last_duration_ms) + " ms" : "") : ""}
-          <div class="k">Responsibility</div>${a.role || ""}<div class="k">Latest output</div>${a.last_log || "Not run yet"}` : "") +
-    `<div class="k">Concept: ${concept}</div>${text}`;
-  document.getElementById("panel").style.display = "block";
+  const e = r ? ENT[r.host] : ["MGT", 0x3b4a63];
+  const hex = "#" + e[1].toString(16).padStart(6, "0");
+  $("pBody").innerHTML = `<h3>${esc(name)}</h3><span style="font-size:10px;font-weight:700;letter-spacing:.1em;border:1px solid ${hex};color:${hex};padding:0 5px">${e[0]}</span>` +
+    (r ? `<div class="k">Status</div>${esc(a.status || "Idle")}${a.last_run ? " · last run " + a.last_run.slice(11, 19) : ""}<div class="k">Responsibility</div>${esc(a.role || "")}<div class="k">Latest output</div>${esc(a.last_log || "Not run yet")}` : "") +
+    `<div class="k">Concept: ${esc(concept)}</div>${esc(text)}`;
+  $("panel").style.display = "block";
 }
 
+// ---------------------------------------------------------------- animation loop
 const clock = new THREE.Clock();
 function tick() {
   const dt = clock.getDelta();
-  for (const r of Object.values(robots)) {
-    r.mixer.update(dt);
-    if (r.status === "Running") r.ring.scale.setScalar(1 + 0.12 * Math.sin(clock.elapsedTime * 6));
-    else r.ring.scale.setScalar(1);
-  }
+  for (const r of Object.values(robots)) { r.mixer.update(dt); r.ring.scale.setScalar(r.status === "Running" ? 1 + 0.12 * Math.sin(clock.elapsedTime * 6) : 1); }
   for (let i = flights.length - 1; i >= 0; i--) {
     const f = flights[i]; f.t += dt / f.dur;
     const t = Math.min(f.t, 1), p = f.from.clone().lerp(f.to, t); p.y += Math.sin(Math.PI * t) * f.arc;
@@ -297,12 +443,19 @@ function tick() {
   }
   stampT += dt; stamp.position.y = stampT < 0.6 ? 1.9 - Math.sin((stampT / 0.6) * Math.PI) * 0.7 : 1.9;
   beaconT += dt; beacon.material.emissive.setHex(beaconT < 1.2 && Math.floor(beaconT * 6) % 2 === 0 ? 0x7c2d12 : 0x000000);
-  controls.update();
-  renderer.render(scene, camera); labels.render(scene, camera);
+  for (const [name, mk] of Object.entries(vesselMk)) {  // glide vessels between polls
+    const cur = mk.getLatLng(), tg = targets[name];
+    if (tg) mk.setLatLng([cur.lat + (tg[0] - cur.lat) * Math.min(1, dt * 2.5), cur.lng + (tg[1] - cur.lng) * Math.min(1, dt * 2.5)]);
+  }
+  controls.update(); renderer.render(scene, camera); labels.render(scene, camera);
   requestAnimationFrame(tick);
 }
 tick();
-addEventListener("resize", () => { camera.aspect = W() / H(); camera.updateProjectionMatrix(); renderer.setSize(W(), H()); labels.setSize(W(), H()); });
+// the panes get their size after layout and change when Box 8 appears: follow them
+function fit3d() { if (!W() || !H()) return; camera.aspect = W() / H(); camera.updateProjectionMatrix(); renderer.setSize(W(), H()); labels.setSize(W(), H()); }
+new ResizeObserver(fit3d).observe(stage);
+new ResizeObserver(() => map.invalidateSize()).observe($("map"));
+fit3d();
 </script>
 </body>
 </html>

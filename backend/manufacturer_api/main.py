@@ -35,7 +35,7 @@ app = FastAPI(title="Manufacturer API (Enterprise 1)", version="1.0",
               description="Cement manufacturer: Marketing + Operations. SYNTHETIC data.")
 require = setup(app, "manufacturer", POLICY)
 
-STATE = {"version": 0, "cache": None, "alerted": set()}
+STATE = {"version": 0, "cache": None, "alerted": set(), "rates": None}
 
 
 def q(sql, **kw):
@@ -270,6 +270,7 @@ def demand_surge(e: Surge, _=Depends(require("simulate"))):
     start = (pd.Timestamp(last) - pd.Timedelta(days=13)).date().isoformat()
     run("UPDATE sales_history SET sales_ton = sales_ton * :f WHERE plant_id=:p AND date >= :s", f=e.factor, p=e.plant_id, s=start)
     run("UPDATE settings SET value=:f WHERE key=:k", f=e.factor, k=f"demand_multiplier_{e.plant_id}")
+    STATE["rates"] = None
     return {"ok": True, "event": "demand surge", **e.model_dump()}
 
 
@@ -288,5 +289,83 @@ def production_cap(e: Capacity, _=Depends(require("simulate"))):
 @app.post("/reset", tags=["simulation"])
 def reset(_=Depends(require("simulate"))):
     generate_manufacturer()
-    STATE.update(version=STATE["version"] + 1, cache=None, alerted=set())
+    STATE.update(version=STATE["version"] + 1, cache=None, alerted=set(), rates=None)
     return {"ok": True}
+
+
+# ------------------------------------------------------------------ live world (simulated clock)
+def daily_rates():
+    """Physical drawdown per plant and cement type (t/day): mean of the last 7 days of sales x demand multiplier."""
+    if STATE.get("rates") is None:
+        s = q("SELECT * FROM sales_history")
+        last = sorted(s.date.unique())[-7:]
+        r = s[s.date.isin(last)].groupby(["plant_id", "cement_type"]).sales_ton.mean().to_dict()
+        mult = setting("demand_multiplier_PP F")
+        STATE["rates"] = {k: v * (mult if k[0] == "PP F" else 1.0) for k, v in r.items()}
+    return STATE["rates"]
+
+
+def world_state():
+    silos = q("SELECT plant_id, cement_type, capacity_ton, dead_stock_ton, level_pct FROM silos")
+    meta = q("SELECT plant_id, lat, lon FROM packing_plants").set_index("plant_id")
+    rates = daily_rates()
+    out = []
+    for (pid, ctype), g in silos.groupby(["plant_id", "cement_type"]):
+        cap = float(g.capacity_ton.sum())
+        stock = float((g.level_pct * g.capacity_ton).sum())
+        usable = de.usable_stock(g.to_dict("records"))
+        rate = rates.get((pid, ctype), 0)
+        out.append({"plant_id": pid, "cement_type": ctype, "lat": float(meta.loc[pid, "lat"]), "lon": float(meta.loc[pid, "lon"]),
+                    "level_pct": round(stock / cap, 4), "usable_ton": round(usable, 1), "capacity_ton": cap,
+                    "daily_use_ton": round(rate, 1), "days_left": round(usable / rate, 2) if rate else None,
+                    "low": stock / cap < LOW_STOCK_PCT, "stocked_out": usable <= 0})
+    return out
+
+
+class Tick(BaseModel):
+    hours: float = 1.0
+
+
+@app.post("/world/tick", tags=["live world"])
+def world_tick(t: Tick, _=Depends(require("simulate"))):
+    """Advance the plant world by t.hours: every silo drains at its plant's daily demand."""
+    rates = daily_rates()
+    silos = q("SELECT plant_id, cement_type, capacity_ton, level_pct FROM silos")
+    with engine.begin() as c:
+        for (pid, ctype), g in silos.groupby(["plant_id", "cement_type"]):
+            stock = float((g.level_pct * g.capacity_ton).sum())
+            if stock <= 0:
+                continue
+            factor = max(0.0, stock - rates.get((pid, ctype), 0) * t.hours / 24) / stock
+            c.execute(text("UPDATE silos SET level_pct = level_pct * :f WHERE plant_id=:p AND cement_type=:c"), {"f": factor, "p": pid, "c": ctype})
+    STATE["version"] += 1
+    return world_state()
+
+
+@app.get("/world/state", tags=["live world"])
+def world_get(_=Depends(require("read:shared"))):
+    return world_state()
+
+
+class Unload(BaseModel):
+    vessel: str
+    plant_id: str
+    cement_type: str
+    quantity_ton: float
+
+
+@app.post("/world/deliver", tags=["live world"])
+def world_deliver(u: Unload, _=Depends(require("execute"))):
+    """A vessel discharges: cement fills the plant's silos of that type in proportion to free space."""
+    silos = q("SELECT silo_id, capacity_ton, level_pct FROM silos WHERE plant_id=:p AND cement_type=:c", p=u.plant_id, c=u.cement_type)
+    free = (1 - silos.level_pct) * silos.capacity_ton
+    total_free = float(free.sum())
+    put = min(u.quantity_ton, total_free)
+    with engine.begin() as c:
+        for r, f in zip(silos.itertuples(), free):
+            add = put * float(f) / total_free if total_free else 0
+            c.execute(text("UPDATE silos SET level_pct = :l, last_reading=:t WHERE silo_id=:s"),
+                      {"l": min(1.0, r.level_pct + add / r.capacity_ton), "s": r.silo_id, "t": datetime.now().isoformat(timespec="seconds")})
+        c.execute(text("DELETE FROM incoming_deliveries WHERE vessel=:v AND plant_id=:p"), {"v": u.vessel, "p": u.plant_id})
+    STATE["version"] += 1
+    return {"unloaded_ton": round(put, 1), "spilled_back_ton": round(u.quantity_ton - put, 1), "state": world_state()}

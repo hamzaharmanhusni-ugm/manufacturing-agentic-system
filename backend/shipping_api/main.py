@@ -1,6 +1,7 @@
 """Enterprise 2: Shipping & Logistics API (port 8002), a separate subsidiary.
 Store: MongoDB (Docker) document collections, camelCase nested documents.
 Agent hosted here: Fleet Tracking Agent (proposal agent)."""
+import math
 import sys
 import time
 from datetime import datetime
@@ -56,14 +57,15 @@ def availability_h(doc):
     op, spd = doc["operation"], doc["spec"]["serviceSpeedKn"]
     pos = (doc["position"]["lat"], doc["position"]["lon"])
     m = op["mode"]
+    timer = op.get("timerHours")
     if m == "loading":
-        h = 12
+        h = 12 if timer is None else timer
     elif m == "anchored":
-        h = 18 + 24
+        h = (18 if timer is None else timer) + 12
     elif m == "ballast":
-        h = sea_distance_nm(pos, LP) / spd + 24
+        h = sea_distance_nm(pos, LP) / spd + 6 + 12
     elif m == "discharging":
-        h = 18 + sea_distance_nm(pos, LP) / spd + 24
+        h = (18 if timer is None else timer) + sea_distance_nm(pos, LP) / spd + 6 + 12
     else:
         return None
     return h + op.get("delayHours", 0)
@@ -208,7 +210,7 @@ def assign(a: Assignment, _=Depends(require("execute"))):
     docs = vessels_c.find()
     for d in docs:
         if d["vesselName"] == a.vessel:
-            d["operation"].update(assignedPlant=a.plant_id, destination=a.plant_id, cargoType=a.cement_type)
+            d["operation"].update(assignedPlant=a.plant_id, assignedQty=a.quantity_ton, cargoType=a.cement_type)
     vessels_c.save(docs)
     rows = assign_c.find()
     rows.append({**a.model_dump(), "assignedAt": datetime.now().isoformat(timespec="seconds"), "status": "confirmed by Shipment"})
@@ -252,3 +254,86 @@ def weather_event(e: Weather, _=Depends(require("simulate"))):
 def reset(_=Depends(require("simulate"))):
     generate_shipping()
     return {"ok": True}
+
+
+# ------------------------------------------------------------------ live world (simulated clock)
+DISCHARGE_H, WAIT_H, LOAD_H = 18, 6, 12  # port times (assumption, documented)
+
+
+def _move(pos, target, nm):
+    """Move along the straight sea leg toward target by nm nautical miles; returns (new_pos, arrived)."""
+    dist = sea_distance_nm(pos, target)
+    if dist <= nm or dist < 1:
+        return target, True
+    f = nm / dist
+    return (pos[0] + (target[0] - pos[0]) * f, pos[1] + (target[1] - pos[1]) * f), False
+
+
+def world_vessels(docs):
+    return [{"vessel": d["vesselName"], "lat": d["position"]["lat"], "lon": d["position"]["lon"], "heading": d["position"]["headingDeg"],
+             "mode": d["operation"]["mode"], "destination": d["operation"].get("destination"), "assigned": d["operation"].get("assignedPlant"),
+             "cargo_ton": d["operation"].get("cargoTon", 0), "cargo_type": d["operation"].get("cargoType"),
+             "delay_hours": round(d["operation"].get("delayHours", 0), 1), "timer_hours": d["operation"].get("timerHours"),
+             "capacity_ton": d["spec"]["capacityTon"]} for d in docs]
+
+
+class Tick(BaseModel):
+    hours: float = 1.0
+
+
+@app.post("/world/tick", tags=["live world"])
+def world_tick(t: Tick, _=Depends(require("simulate"))):
+    """Advance every vessel by t.hours through the voyage cycle:
+    loading -> laden voyage (if assigned) -> discharging -> ballast to load port -> anchored -> loading."""
+    docs, arrivals, departures = vessels_c.find(), [], []
+    now = datetime.now().isoformat(timespec="seconds")
+    for d in docs:
+        op, pos = d["operation"], d["position"]
+        h = t.hours
+        if op.get("delayHours", 0) > 0:  # a delay holds the vessel in place first
+            used = min(h, op["delayHours"])
+            op["delayHours"] = round(op["delayHours"] - used, 2)
+            h -= used
+        if h <= 0 or op["mode"] == "maintenance":
+            continue
+        here = (pos["lat"], pos["lon"])
+        spd = d["spec"]["serviceSpeedKn"]
+        m = op["mode"]
+        if m in ("laden", "ballast"):
+            target = PLANT_XY.get(op.get("destination")) if m == "laden" else LP
+            if target is None:
+                continue
+            new, arrived = _move(here, target, spd * h)
+            pos["headingDeg"] = round(math.degrees(math.atan2(target[1] - here[1], target[0] - here[0])) % 360)
+            pos.update(lat=round(new[0], 5), lon=round(new[1], 5), speedKn=0.3 if arrived else spd)
+            if arrived and m == "laden":
+                arrivals.append({"vessel": d["vesselName"], "plant_id": op["destination"], "cement_type": op.get("cargoType") or "PCC",
+                                 "quantity_ton": op.get("cargoTon", 0)})
+                op.update(mode="discharging", timerHours=DISCHARGE_H)
+            elif arrived:
+                op.update(mode="anchored", timerHours=WAIT_H, destination=None)
+        else:
+            op["timerHours"] = round((op.get("timerHours") if op.get("timerHours") is not None else (LOAD_H if m == "loading" else WAIT_H if m == "anchored" else DISCHARGE_H)) - h, 2)
+            if op["timerHours"] <= 0:
+                if m == "discharging":
+                    op.update(mode="ballast", destination="Load Port", cargoTon=0, cargoType=None, timerHours=None)
+                elif m == "anchored":
+                    op.update(mode="loading", timerHours=LOAD_H)
+                elif m == "loading":
+                    if op.get("assignedPlant"):
+                        op.update(mode="laden", destination=op["assignedPlant"], cargoTon=op.get("assignedQty") or d["spec"]["capacityTon"],
+                                  timerHours=None, deliveredTo=op["assignedPlant"])
+                        op["assignedPlant"] = None
+                        departures.append({"vessel": d["vesselName"], "plant_id": op["destination"], "quantity_ton": op["cargoTon"]})
+                        pos["speedKn"] = spd
+                    else:
+                        op["timerHours"] = 0  # loaded and waiting for orders at the load port
+        pos["lastPingAt"] = now
+        d["gpsTrack"] = (d.get("gpsTrack", []) + [{"ts": now, "lat": pos["lat"], "lon": pos["lon"], "speedKn": pos["speedKn"]}])[-48:]
+    vessels_c.save(docs)
+    return {"arrivals": arrivals, "departures": departures, "vessels": world_vessels(docs)}
+
+
+@app.get("/world/state", tags=["live world"])
+def world_get(_=Depends(require("read:shared"))):
+    return {"vessels": world_vessels(vessels_c.find()), "route_wave_m": route_wave()}

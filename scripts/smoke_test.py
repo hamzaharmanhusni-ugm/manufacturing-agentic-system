@@ -59,6 +59,27 @@ if len(pending) >= 2:
     check("approve executes across enterprises", a.status_code == 200 and any(
         x["vessel"] == pending[0]["vessel"] for x in httpx.get(url("shipping") + "/assignments", headers={"X-API-Key": "key-global-admin"}).json()))
     check("reject recorded", b.status_code == 200 and b.json()["status"] == "Rejected")
+# Live world: silos drain with the clock, a sensor wakes the agents, an approved vessel sails and unloads.
+httpx.post(f"{O}/reset", json={}, timeout=180)
+w0 = httpx.get(f"{O}/world", timeout=60).json()
+lvl0 = {(p["plant_id"], p["cement_type"]): p["level_pct"] for p in w0["plants"]}
+httpx.post(f"{O}/world/speed", json={"speed": 4})
+httpx.post(f"{O}/world/play")
+kinds, t_end = set(), time.time() + 150
+while time.time() < t_end:
+    w = httpx.get(f"{O}/world", timeout=60).json()
+    kinds |= {e["kind"] for e in w["log"]}
+    for d in w["pending"]:
+        httpx.post(f"{O}/decisions/{d['id']}/approve", json={"role": "Global Administrator"}, timeout=60)
+    if {"event", "depart", "arrive", "disruption"} <= kinds and w["t"] > 70:
+        break
+    time.sleep(2)
+httpx.post(f"{O}/world/pause")
+drained = any(p["level_pct"] < lvl0[(p["plant_id"], p["cement_type"])] for p in w["plants"])
+check("live world: silos drain with the clock", drained)
+check("live world: sensor event starts the agents by itself", "event" in kinds)
+check("live world: approved vessels depart and unload", {"depart", "arrive"} <= kinds, str(sorted(kinds)))
+check("live world: storyline disruption arrives", "disruption" in kinds)
 k1 = httpx.get(f"{O}/kpis", timeout=60).json()["current"]
 changed = [m for m in ("avg_days_of_cover", "stockout_events", "replanning_events", "human_approval_rate", "min_material_coverage") if k0.get(m) != k1.get(m)]
 check("KPIs changed after simulation", len(changed) >= 3, str(changed))

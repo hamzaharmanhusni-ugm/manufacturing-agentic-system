@@ -15,7 +15,7 @@ import time
 import uuid
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -34,7 +34,7 @@ STATE_FILE = STORES / "orchestrator_state.json"
 app = FastAPI(title="Global Orchestrator", version="1.0",
               description="Global Agentic Control Center: orchestration, dispatch planning, narration, approvals, KPIs.")
 # The 3D Agent Office reads agent state from the browser; allow the local dashboard origin (read-only GETs).
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], allow_methods=["GET"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
 def now():
@@ -364,7 +364,7 @@ def create_decisions(run):
 
 
 def execute_scenario(run):
-    sc = SCENARIOS[run["scenario"]]
+    sc = SCENARIOS.get(run["scenario"]) or run["live"]
     t0 = time.perf_counter()
     try:
         run["kpi_before"] = compute_kpis()
@@ -416,7 +416,7 @@ def execute_scenario(run):
     run["finished"] = now()
     run["kpi_after"] = compute_kpis(force=True)
     run["dashboards_after"] = dashboards_probe()
-    KPI_HISTORY.append({"ts": now(), "scenario": run["scenario"], "title": SCENARIOS[run["scenario"]]["title"],
+    KPI_HISTORY.append({"ts": now(), "scenario": run["scenario"], "title": run["title"],
                         "before": run["kpi_before"], "after": run["kpi_after"]})
     audit("system", "scenario run", f"{run['scenario']} -> {run['status']} in {run['duration_s']} s")
 
@@ -703,6 +703,7 @@ def reset(actor: Actor = Actor()):
     for a in AGENTS.values():
         a["status"] = "Idle"
     _kpi_cache["v"] = None
+    world_reset()
     audit(actor.role, "reset ecosystem", "all enterprise stores regenerated from seed")
     return {"ok": True}
 
@@ -756,3 +757,155 @@ ARCH = {
 def architecture():
     gov = governance()["enterprise_policies"]
     return {e: {**v, "G": gov.get(e)} for e, v in ARCH.items()}
+
+
+# ------------------------------------------------------------------ live world: a simulated clock that drives the real case
+# Each tick moves the physical world (silos drain, vessels sail, cargo is unloaded). When a sensor crosses a rule the
+# orchestrator starts a pipeline by itself (event-driven). The clock stops while agents work and while a decision waits
+# for a person, so the audience always sees that agents propose and people act. Storyline disruptions fire at fixed
+# simulated hours. All values are synthetic.
+STORY = [
+    (30, "storm", "Marine weather service: storm on the PP F route, waves 3.4 m",
+     [("shipping", "/events/weather", {"plants": ["PP F"], "wave_m": 3.4})], [], True),
+    (54, "calm", "Marine weather service: the storm on the PP F route has passed",
+     [("shipping", "/events/weather", {"plants": ["PP F"], "wave_m": 1.2})], [], False),
+    (66, "supplier", "Supplier portal: main clinker supplier drops to 30 % availability",
+     [("supplier", "/events/disruption", {"supplier_id": "SUP-01", "availability_pct": 30})], ["supplier"], True),
+]
+WORLD = {}
+
+
+def world_reset():
+    WORLD.update(running=False, speed=1.0, t=0.0, start=datetime.now().replace(minute=0, second=0, microsecond=0),
+                 pause_reason="Press play to start the clock", log=deque(maxlen=80), last_trigger={}, story_done=set(),
+                 plants=[], vessels=[], stockouts=set())
+    try:
+        WORLD["plants"] = call("manufacturer", "GET", "/world/state")
+        WORLD["vessels"] = call("shipping", "GET", "/world/state")["vessels"]
+    except Exception:  # noqa: BLE001  enterprise APIs may still be starting
+        pass
+
+
+def clock_label(t=None):
+    t = WORLD.get("t", 0) if t is None else t
+    ts = WORLD["start"] + timedelta(hours=t)
+    return f"Day {(ts.date() - WORLD['start'].date()).days + 1} · {ts:%H:%M}"
+
+
+def wlog(kind, text):
+    WORLD["log"].appendleft({"clock": clock_label(), "t": round(WORLD["t"], 1), "kind": kind, "text": text})
+
+
+def start_live_run(event, ext=(), title=None):
+    for a in AGENTS.values():
+        a["status"] = "Idle"
+    rid = "R-" + uuid.uuid4().hex[:6].upper()
+    RUNS[rid] = {"id": rid, "scenario": "live", "title": title or f"Live {clock_label()}: {event}", "status": "Running", "started": now(),
+                 "steps": [], "ext": list(ext), "plan": [], "by": "event-driven (no human trigger)",
+                 "live": {"event": f"{clock_label()} · {event}", "inject": [], "ext": list(ext)}}
+    audit("orchestrator", "autonomous run", event)
+    threading.Thread(target=execute_scenario, args=(RUNS[rid],), daemon=True).start()
+    return rid
+
+
+def world_step():
+    if any(r["status"] == "Running" for r in RUNS.values()):
+        WORLD["pause_reason"] = "Agents are working; the clock waits for their plan"
+        return
+    if any(d["status"] == "Requires human approval" for d in DECISIONS.values()):
+        WORLD["pause_reason"] = "Waiting for a person to approve or reject the dispatch"
+        return
+    WORLD["pause_reason"] = None
+    h = WORLD["speed"]
+    ship = call("shipping", "POST", "/world/tick", {"hours": h})
+    for dpt in ship["departures"]:
+        wlog("depart", f"{dpt['vessel']} loaded {dpt['quantity_ton']:,.0f} t and sails for {dpt['plant_id']}")
+    for arr in ship["arrivals"]:
+        res = call("manufacturer", "POST", "/world/deliver", arr)
+        wlog("arrive", f"{arr['vessel']} berthed at {arr['plant_id']} and unloaded {res['unloaded_ton']:,.0f} t {arr['cement_type']}")
+    WORLD["plants"] = call("manufacturer", "POST", "/world/tick", {"hours": h})
+    WORLD["vessels"] = ship["vessels"]
+    WORLD["t"] += h
+    for pl in WORLD["plants"]:
+        key = f"{pl['plant_id']} {pl['cement_type']}"
+        if pl["stocked_out"] and key not in WORLD["stockouts"]:
+            WORLD["stockouts"].add(key)
+            wlog("stockout", f"STOCK-OUT at {key}: the plant cannot sell this cement until a vessel arrives")
+        elif not pl["stocked_out"]:
+            WORLD["stockouts"].discard(key)
+    for t_at, key, text, inject, ext, rerun in STORY:
+        if WORLD["t"] >= t_at and key not in WORLD["story_done"]:
+            WORLD["story_done"].add(key)
+            wlog("disruption", text)
+            for ent, path, body in inject:
+                call(ent, "POST", path, body)
+                if path == "/events/weather" and body["wave_m"] > 2.5:  # laden vessels already on that route slow down
+                    for v in WORLD["vessels"]:
+                        if v["mode"] == "laden" and v["destination"] in body["plants"]:
+                            call("shipping", "POST", "/events/vessel-delay", {"vessel": v["vessel"], "hours": 14})
+                            wlog("disruption", f"{v['vessel']} reduces speed in the storm on the way to {v['destination']}: about 14 h late")
+            if rerun:
+                start_live_run(text, ext=ext)
+            return
+    # Event detection: a silo crossing the 25 % rule wakes the agents (once per plant per 36 simulated hours).
+    for pl in sorted(WORLD["plants"], key=lambda x: x["level_pct"]):
+        key = f"{pl['plant_id']} {pl['cement_type']}"
+        if pl["low"] and WORLD["t"] - WORLD["last_trigger"].get(key, -999) > 36:
+            WORLD["last_trigger"][key] = WORLD["t"]
+            text = f"IIoT silo sensor: {key} at {pl['level_pct']:.0%} (rule: below 25 %), {pl['days_left']} days of stock left"
+            wlog("event", text)
+            start_live_run(text, title=f"Live {clock_label()}: low stock at {key}")
+            return
+
+
+def world_loop():
+    while True:
+        time.sleep(1.0)
+        if not WORLD or not WORLD.get("running"):
+            continue
+        try:
+            world_step()
+        except Exception as ex:  # noqa: BLE001
+            WORLD["pause_reason"] = f"World tick failed: {ex}"
+
+
+class Speed(BaseModel):
+    speed: float = 1.0
+
+
+@app.get("/world")
+def world():
+    if not WORLD.get("plants"):
+        world_reset()
+    pend = [{k: d[k] for k in ("id", "action", "priority", "expected_impact", "vessel", "plant_id")} for d in DECISIONS.values()
+            if d["status"] == "Requires human approval"]
+    return {"clock": clock_label(), "t": round(WORLD["t"], 2), "running": WORLD["running"], "speed": WORLD["speed"],
+            "pause_reason": WORLD["pause_reason"], "plants": WORLD["plants"], "vessels": WORLD["vessels"],
+            "log": list(WORLD["log"])[:30], "pending": pend, "story": [{"at": a, "text": t} for a, _, t, *_ in STORY],
+            "storm_routes": ["PP F"] if "storm" in WORLD["story_done"] and "calm" not in WORLD["story_done"] else []}
+
+
+@app.post("/world/play")
+def world_play():
+    if not WORLD.get("plants"):
+        world_reset()
+    WORLD["running"] = True
+    if not WORLD["log"]:
+        wlog("start", "Clock started. Plants sell cement every hour; silos drain at each plant's own daily demand.")
+    return world()
+
+
+@app.post("/world/pause")
+def world_pause():
+    WORLD["running"] = False
+    WORLD["pause_reason"] = "Paused by the user"
+    return world()
+
+
+@app.post("/world/speed")
+def world_speed(sp: Speed):
+    WORLD["speed"] = max(0.25, min(sp.speed, 6.0))
+    return world()
+
+
+threading.Thread(target=world_loop, daemon=True).start()

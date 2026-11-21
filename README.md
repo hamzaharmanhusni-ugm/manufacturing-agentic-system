@@ -10,7 +10,7 @@ Seluruh data bersifat **sintetis**. Angka performa model menggambarkan kecocokan
 
 ![Control Center](docs/screenshots/control-center.png)
 
-![Agent Office 3D](docs/screenshots/agent-office-panel.png)
+![Live Operations](docs/screenshots/live-ops-approval.png)
 
 ![Peta kode agent](docs/agent-code-map.svg)
 
@@ -25,7 +25,7 @@ Seluruh data bersifat **sintetis**. Angka performa model menggambarkan kecocokan
 | `backend/global_orchestrator/` | Port 8000. Orchestrator, Dispatch Planner, Narrator, skenario, approval, KPI |
 | `shared/` | Decision engine (SAW, Pers. 14), model ML, keamanan dan RBAC, konektor basis data |
 | `data/generate.py` | Generator data sintetis berbasis seed |
-| `frontend/` | Dashboard Streamlit (port 3000), termasuk Agent Office 3D (`office3d.html`, three.js) |
+| `frontend/` | Dashboard Streamlit (port 3000), termasuk Live Operations 3D (`office3d.html`: three.js dan Leaflet) |
 | `scripts/` | Smoke test end-to-end dan pembuat gambar peta kode agent |
 | `tests/` | Uji unit decision engine |
 | `docs/` | Arsitektur, dokumentasi API, skrip demo, presentasi, riset API publik |
@@ -66,7 +66,7 @@ Buka http://localhost:3000. Perintah `run_all.py` menyalakan PostgreSQL dan Mong
 .venv/Scripts/python scripts/smoke_test.py         # 17 pemeriksaan end-to-end (stack harus menyala)
 ```
 
-Smoke test memeriksa kesehatan 4 API, autentikasi 401/403, enam skenario, eksekusi paralel, adaptive replanning, approve dan reject lintas enterprise, perubahan KPI, serta reset.
+Smoke test (21 pemeriksaan) memeriksa kesehatan 4 API, autentikasi 401/403, enam skenario, eksekusi paralel, adaptive replanning, approve dan reject lintas enterprise, dunia langsung (silo terkuras, sensor memicu agent, kapal berangkat dan bongkar, disrupsi alur cerita), perubahan KPI, serta reset.
 
 ## Kriteria penerimaan
 
@@ -103,4 +103,4 @@ Smoke test memeriksa kesehatan 4 API, autentikasi 401/403, enam skenario, ekseku
 - Narrator menggunakan template deterministik. LLM aktif apabila `ANTHROPIC_API_KEY` diisi, dan keluarannya ditolak bila memuat angka baru.
 - Notifikasi Telegram/WhatsApp disimulasikan di panel notifikasi.
 - Distribution dan Supplier merupakan ekstensi prototipe, bukan bagian proposal asli.
-- Agent Office 3D membutuhkan browser dengan WebGL. Model robot (RobotExpressive, CC0) dan three.js (MIT) disajikan lokal dari `frontend/static/`.
+- Live Operations 3D membutuhkan browser dengan WebGL; basemap OpenStreetMap dimuat daring, sedangkan plant dan kapal tetap tampil tanpa koneksi. Model robot (RobotExpressive, CC0) dan three.js (MIT) disajikan lokal dari `frontend/static/`.

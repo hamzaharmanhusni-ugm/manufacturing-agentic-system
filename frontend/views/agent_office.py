@@ -1,46 +1,49 @@
-"""Agent Office 3D: the agents as robot colleagues in a shared office, driven live by the orchestrator. A teaching view."""
-import time
+"""Live Operations: the agents as robot colleagues (left) and the physical world they act on (right), on one simulated clock.
+A teaching view of the real case: demand drains silos, a sensor wakes the agents, a person signs, a vessel sails, the silo refills."""
 from pathlib import Path
 
 import streamlit as st
 import streamlit.components.v1 as components
 
 import ui
-from client import get, post, role
+from client import role
 from shared.config import url
 from shared.rbac import can
 
 ui.guard("global")
-ui.header("Agent Office 3D", "The nine agents as robot colleagues. Each zone is an enterprise; envelopes are real agent-to-agent messages.")
+ui.header("Live Operations", "One simulated clock for the whole ecosystem: watch the agents think on the left and the real supply chain move on the right.")
 
-scen = get("orchestrator", "/scenarios") or []
-labels = {s["title"]: s["key"] for s in scen}
-c1, c2, c3 = st.columns([2.2, 1, 1], vertical_alignment="center")
-pick = c1.selectbox("Event", list(labels), label_visibility="collapsed")
-if c2.button(":material/play_arrow: Run and watch", type="primary", use_container_width=True, disabled=not can(role(), "simulate")):
-    try:
-        post("orchestrator", f"/scenarios/{labels[pick]}/run", {"role": role()})
-    except RuntimeError as ex:
-        st.error(str(ex))
-    time.sleep(0.3)
-c3.page_link("views/control_center.py", label="Sign the docket", icon=":material/assignment:")
+st.markdown(
+    '<div class="notice info"><span class="t">How to run the real case.</span> Press <b>Play</b>. Plants sell cement every simulated hour, '
+    "so silos drain at each plant's own daily demand. When a silo falls below 25 %, the sensor wakes the agents by itself. "
+    "The clock stops while they work and waits for your signature in Box 8. After you approve, the vessel loads, sails and unloads, "
+    "and the silo refills on the map. A storm and a supplier problem arrive later in the story.</div>", unsafe_allow_html=True)
 
-# The browser polls the orchestrator directly (CORS allows the dashboard origin), so the 3D scene never reloads.
-html = (Path(__file__).resolve().parent.parent / "office3d.html").read_text(encoding="utf-8").replace("__ORCH__", url("orchestrator").replace("127.0.0.1", "localhost"))
-components.html(html, height=700)
+html = (Path(__file__).resolve().parent.parent / "office3d.html").read_text(encoding="utf-8")
+html = (html.replace("__ORCH__", url("orchestrator").replace("127.0.0.1", "localhost"))
+            .replace("__ROLE__", role())
+            .replace("__CAN_APPROVE__", "true" if can(role(), "approve") else "false")
+            .replace("__CAN_SIM__", "true" if can(role(), "simulate") else "false"))
+components.html(html, height=900)
 
-ui.section("How to read the office", "concepts from the course, shown by the agents")
+c1, c2 = st.columns(2)
+c1.page_link("views/control_center.py", label="Open the full dispatch docket", icon=":material/assignment:")
+c2.page_link("views/simulation.py", label="Analyse one scenario step by step", icon=":material/play_circle:")
+
+ui.section("How to read this view", "concepts from the course, shown by the agents and the world")
 st.markdown("""
 <table class="rt">
 <tr><th>What you see</th><th>What it means</th><th>Agentic concept</th></tr>
-<tr><td>Five platforms in different colours</td><td>Four independent enterprises and the global hub. Each runs its own API, database and policy.</td><td>Multi-enterprise ecosystem, E<sub>i</sub> = (U, M, D, A, P, G)</td></tr>
-<tr><td>The orange beacon flashes</td><td>An event arrives: a silo sensor, a sales change, a vessel delay, a weather alert.</td><td>Event-driven architecture</td></tr>
-<tr><td>The navy Orchestrator sends envelopes to several robots at once</td><td>Task plan and parallel dispatch; agents never call each other.</td><td>Orchestrator-worker, fan-out and fan-in</td></tr>
-<tr><td>A robot walks with a pulsing cyan ring</td><td>The agent is working inside its own enterprise API.</td><td>Perceive, reason, act; tool use</td></tr>
-<tr><td>Envelopes travel between zones</td><td>Real messages from the orchestrator log, crossing company boundaries with an API key.</td><td>Agent-to-agent (A2A) communication</td></tr>
-<tr><td>The Dispatch Planner gives a thumbs up</td><td>The plan is computed by deterministic code (SAW and greedy assignment).</td><td>Code decides</td></tr>
-<tr><td>The Narrator gives a thumbs up</td><td>The plan is explained in words; numbers are guarded.</td><td>AI explains, with guardrails</td></tr>
-<tr><td>Robots wave, the person stamps</td><td>Decisions wait for an authorised person to approve or reject.</td><td>Human in the loop: people act</td></tr>
+<tr><td>The clock runs and silo gauges on the map go down</td><td>Plants sell cement every hour at their own daily demand.</td><td>The environment an agent perceives</td></tr>
+<tr><td>The orange beacon flashes, a log line says "IIoT silo sensor"</td><td>A rule fired (silo below 25 percent) and became an event.</td><td>Event-driven architecture, reactive trigger</td></tr>
+<tr><td>The Orchestrator sends envelopes to four robots at once</td><td>Task plan and parallel dispatch; agents never call each other.</td><td>Orchestrator-worker, fan-out and fan-in</td></tr>
+<tr><td>A robot walks with a cyan ring; its screen shows silo levels, a forecast or a ranking</td><td>The agent is working with its own tools inside its own enterprise API.</td><td>Perceive, reason, act; tool use</td></tr>
+<tr><td>Envelopes cross between platforms</td><td>Real messages crossing company boundaries with an API key.</td><td>Agent-to-agent (A2A) communication, governance</td></tr>
+<tr><td>The Dispatch Planner's screen shows "Ship N → PP C"</td><td>The plan comes from deterministic code (SAW, greedy assignment).</td><td>Code decides</td></tr>
+<tr><td>The clock stops and Box 8 appears above the views</td><td>Nothing moves in the real world until a person signs.</td><td>Human in the loop: people act</td></tr>
+<tr><td>After approval the vessel sails on the map and the silo refills</td><td>The decision changes the environment; the next sensor reading reflects it.</td><td>Closed loop: act, then perceive again</td></tr>
+<tr><td>A storm turns a route red and slows a laden vessel; agents replan</td><td>New information arrives mid-plan and the ecosystem adapts.</td><td>Adaptive replanning</td></tr>
 </table>
 """, unsafe_allow_html=True)
-st.caption("Robot model: RobotExpressive by Tomás Laulhé (Quaternius), CC0 1.0. Rendering: three.js (MIT). Both served locally from frontend/static.")
+st.caption("All plant, vessel and demand data is synthetic. Robot model: RobotExpressive by Tomás Laulhé (Quaternius), CC0 1.0. "
+           "Rendering: three.js (MIT). Map: Leaflet (BSD 2-Clause), CARTO basemap with OpenStreetMap data.")

@@ -22,7 +22,7 @@ with st.sidebar:
 
 pages = {
     "Global": [st.Page("views/control_center.py", title="Control Center", icon=":material/assignment:", default=True),
-               st.Page("views/agent_office.py", title="Agent Office 3D", icon=":material/smart_toy:"),
+               st.Page("views/agent_office.py", title="Live Operations 3D", icon=":material/smart_toy:"),
                st.Page("views/simulation.py", title="Simulation Center", icon=":material/play_circle:"),
                st.Page("views/analytics.py", title="KPI & Analytics", icon=":material/monitoring:")],
     "Enterprises": [st.Page("views/manufacturer.py", title="Cement Manufacturing", icon=":material/factory:"),

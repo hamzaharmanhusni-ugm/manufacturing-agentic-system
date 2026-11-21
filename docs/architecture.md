@@ -113,7 +113,20 @@ Orchestrator menormalkan satuan (misalnya 20 sak = 1 ton). Setiap panggilan lint
 | Human in the loop | Hanya Global Administrator, Manufacturer Manager, dan Shipping Manager yang dapat menyetujui |
 | Audit trail | Run skenario, persetujuan, penolakan, upaya yang ditolak, dan reset tercatat |
 
-## 8. Komponen dari proposal dan tambahan prototipe
+## 8. Dunia langsung (live world)
+
+Jam simulasi di orchestrator menggerakkan lingkungan fisik setiap detik:
+
+| Langkah | Enterprise | Endpoint |
+|---|---|---|
+| Kapal bergerak dalam siklus muat, berlayar bermuatan, bongkar, kembali kosong, antre | Shipping | `POST /world/tick` |
+| Muatan dibongkar dan silo terisi sesuai ruang kosong | Manufacturer | `POST /world/deliver` |
+| Silo terkuras sesuai permintaan harian setiap plant | Manufacturer | `POST /world/tick` |
+| Deteksi event (silo di bawah 25%) dan alur cerita disrupsi | Global Orchestrator | `GET /world`, `POST /world/play`, `/world/pause`, `/world/speed` |
+
+Jam berhenti selama agent bekerja dan selama keputusan menunggu persetujuan, sehingga lingkungan hanya berubah setelah manusia bertindak. Siklus ini menutup loop perceive, reason, act: tindakan yang disetujui mengubah lingkungan, dan pembacaan sensor berikutnya mencerminkan perubahan itu. Waktu pelabuhan (muat 12 jam, antre 6 jam, bongkar 18 jam) dan perlambatan akibat badai (14 jam) merupakan asumsi prototipe.
+
+## 9. Komponen dari proposal dan tambahan prototipe
 
 | Komponen | Sumber |
 |---|---|
