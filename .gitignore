@@ -15,3 +15,8 @@ nul
 .impeccable/questions/
 # deck build script references local skill paths; kept locally only
 scripts/presentation/
+
+# copies of the deliverables at the root for easy access (originals live in docs/)
+/Laporan-Manufacturing-Agentic-System.*
+/Manufacturing-Agentic-System.pptx
+/Manufacturing-Agentic-System.pdf
