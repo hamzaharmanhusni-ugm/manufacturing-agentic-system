@@ -25,7 +25,8 @@ ISI
 03_Source_Code   Kode sumber lengkap: 4 API enterprise, Global Orchestrator, dashboard Streamlit,
                  decision engine, model ML, data sintetis, uji otomatis, agent dan skill Claude Code.
 04_Dokumentasi   Arsitektur, dokumentasi API, panduan pengguna, skrip demo, proses agentic coding,
-                 peta kode agent (SVG), dan tangkapan layar aplikasi.
+                 peta kode agent (SVG), diagram arsitektur, skema sistem,
+                 ilustrasi agent, dan tangkapan layar aplikasi.
 
 MENJALANKAN (Windows, Python 3.10 atau lebih baru)
   cd 03_Source_Code
@@ -66,6 +67,8 @@ def main():
                     z.writestr(f"03_Source_Code/{info.filename}", src.read(info))
         for rel in DOCS:
             z.write(ROOT / rel, f"04_Dokumentasi/{Path(rel).name}")
+        for f in sorted((ROOT / "docs" / "diagrams").glob("*.*")):
+            z.write(f, f"04_Dokumentasi/diagrams/{f.name}")
         for f in sorted((ROOT / "docs" / "screenshots").glob("*.png")):
             if not f.name.startswith("before-"):
                 z.write(f, f"04_Dokumentasi/screenshots/{f.name}")

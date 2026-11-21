@@ -4,6 +4,16 @@ Dokumen ini menjelaskan rancangan sistem: representasi setiap enterprise, alur o
 
 ## 1. Gambaran sistem
 
+![Ilustrasi konseptual arsitektur (dihasilkan dengan ChatGPT)](diagrams/architecture-illustration.png)
+
+![Arsitektur sistem](diagrams/architecture.png)
+
+![Skema satu siklus agentic](diagrams/agentic-loop.png)
+
+![Para agent sebagai tim kerja digital](diagrams/agent-roster.png)
+
+Diagram dibuat oleh `scripts/make_diagrams.py` dari isi kode. Diagram Mermaid berikut merangkum alur yang sama.
+
 ```mermaid
 flowchart TB
   subgraph UI["Dashboard Streamlit :3000"]

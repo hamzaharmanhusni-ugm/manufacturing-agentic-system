@@ -50,6 +50,7 @@ Coding agent utama berperan sebagai orchestrator: memecah pekerjaan, menjalankan
 | Reviewer independen | Menilai hasil redesign tanpa mewarisi konteks pembuat | Putusan *recapture*, lalu *fix* dua kali, dengan daftar perbaikan bernomor |
 | Dokumenter | Mencatat sistem desain dari kode yang sudah selesai dibangun | `DESIGN.md`, `.impeccable/design.json` |
 | Pembuat presentasi | Menyusun deck 16 slide dan memeriksa setiap slide sebagai gambar | `docs/presentation/` |
+| Pembuat ilustrasi (ChatGPT) | Agen menulis prompt dari rancangan sistem, ChatGPT menghasilkan ilustrasi konseptual arsitektur; label diperiksa sebelum digunakan | `docs/diagrams/architecture-illustration.png` |
 
 ## 5. Feedback loop dan verifikasi
 
