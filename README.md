@@ -63,7 +63,7 @@ Buka http://localhost:3000. Perintah `run_all.py` menyalakan PostgreSQL dan Mong
 
 ```bash
 .venv/Scripts/python -m pytest -q tests            # 7 uji unit decision engine
-.venv/Scripts/python scripts/smoke_test.py         # 17 pemeriksaan end-to-end (stack harus menyala)
+.venv/Scripts/python scripts/smoke_test.py         # 21 pemeriksaan end-to-end (stack harus menyala)
 ```
 
 Smoke test (21 pemeriksaan) memeriksa kesehatan 4 API, autentikasi 401/403, enam skenario, eksekusi paralel, adaptive replanning, approve dan reject lintas enterprise, dunia langsung (silo terkuras, sensor memicu agent, kapal berangkat dan bongkar, disrupsi alur cerita), perubahan KPI, serta reset.
