@@ -87,6 +87,8 @@ Smoke test (21 pemeriksaan) memeriksa kesehatan 4 API, autentikasi 401/403, enam
 
 ## Dokumentasi lanjutan
 
+- [Laporan proyek](docs/report/Laporan-Manufacturing-Agentic-System.pdf): 46 halaman, disusun berdasarkan materi kuliah Bab 1 sampai 5, termasuk proses agentic coding (DOCX dan PDF).
+- [Proses agentic coding](docs/agentic-coding-process.md): cara prototipe ini dibangun bersama coding agent.
 - [Arsitektur](docs/architecture.md): representasi E_i, alur agent, model, decision engine, keamanan.
 - [Dokumentasi API](docs/api.md): endpoint setiap layanan dan contoh pemanggilan.
 - [Skrip demo](docs/demo-script.md): urutan presentasi enam skenario.
