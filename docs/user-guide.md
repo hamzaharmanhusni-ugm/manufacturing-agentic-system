@@ -30,9 +30,21 @@ Tanda status: kotak hitam berarti selesai, kotak cyan berkedip berarti sedang be
 
 Pada Kotak 6, angka kedatangan berwarna merah berarti kapal diperkirakan tiba setelah stok habis. Baris kuning menandai rencana yang berubah setelah disrupsi, dengan nama kapal lama dicoret.
 
-## Agent Office 3D
+## Live Operations 3D
 
-Halaman pembelajaran yang menampilkan sembilan agent sebagai robot di kantor bersama. Setiap platform berwarna adalah satu enterprise; platform navy di tengah adalah Global Orchestrator.
+Halaman ini memperlihatkan kasus nyata dari awal sampai akhir pada satu jam simulasi. Panel kiri adalah kantor agent (siapa yang sedang berpikir); panel kanan adalah dunia nyata (silo dan kapal di peta laut Indonesia).
+
+Alur yang terjadi setelah tombol **Play** ditekan:
+
+1. Setiap jam simulasi plant menjual semen sehingga silo terkuras sesuai permintaan harian masing-masing plant.
+2. Saat sebuah silo turun di bawah 25%, sensor IIoT memicu event dan Orchestrator menjalankan agent tanpa perintah manusia.
+3. Jam berhenti selama agent bekerja, lalu menunggu tanda tangan pada strip **Box 8 Authorisation** di bagian atas.
+4. Setelah disetujui, kapal memuat di load port, berlayar menuju plant (garis putus-putus cyan di peta), lalu membongkar muatan sehingga gauge silo naik kembali.
+5. Alur cerita menambahkan disrupsi: badai di rute PP F pada jam ke-30 (rute memerah, kapal bermuatan melambat sekitar 14 jam, agent merencanakan ulang), badai reda pada jam ke-54, dan gangguan pemasok clinker pada jam ke-66.
+
+Kecepatan jam dapat diatur (0,5 sampai 4 jam simulasi per detik). **Reset story** mengembalikan seluruh enterprise ke kondisi awal. **Screens** menampilkan atau menyembunyikan layar kerja di atas robot.
+
+Setiap platform berwarna di panel kiri adalah satu enterprise; platform navy di tengah adalah Global Orchestrator. Di atas setiap robot muncul layar kerja berisi keluaran agent itu sendiri: level silo, forecast 14 hari, ranking prioritas, ketersediaan armada, hasil SAW, atau kalimat Narrator.
 
 | Yang terlihat | Artinya |
 |---|---|
@@ -42,8 +54,10 @@ Halaman pembelajaran yang menampilkan sembilan agent sebagai robot di kantor ber
 | Robot mengacungkan jempol | Agent selesai dan menandatangani hasilnya |
 | Robot melambai, cincin ungu | Keputusan menunggu persetujuan manusia |
 | Figur manusia memberi stempel | Persetujuan atau penolakan oleh peran berwenang |
+| Gauge silo merah di peta | Level silo di bawah 25% |
+| Rute merah di peta | Badai, pelayaran tidak disarankan |
 
-Klik robot atau figur manusia untuk membuka panel berisi status, tanggung jawab, keluaran terakhir, dan konsep agentic yang diperankan (misalnya orchestrator-worker, perceive-reason-act, human in the loop). Bilah di bawah menandai langkah orkestrasi yang sedang berlangsung. Tombol **Run and watch** menjalankan skenario sambil tetap di halaman ini.
+Klik robot atau figur manusia untuk membuka panel berisi status, tanggung jawab, keluaran terakhir, dan konsep agentic yang diperankan (misalnya orchestrator-worker, perceive-reason-act, human in the loop). Bilah di bawah menandai langkah yang sedang berlangsung, dari event sampai dampak di dunia nyata, dan log cerita mencatat setiap kejadian dengan waktu simulasinya.
 
 ## Halaman lain
 

@@ -8,9 +8,16 @@ Durasi sekitar 12 menit. Jalankan `python run_all.py`, buka http://localhost:300
 - Tunjukkan buku besar enterprise: setiap enterprise memiliki API, port, basis data, dan agent sendiri. Klik salah satu tautan untuk membuka dashboard enterprise.
 - Sampaikan prinsip: *code decides, AI explains, people act*.
 
-## 0b. Agent Office 3D (1 menit, opsional untuk pembukaan)
+## 0b. Kasus nyata di Live Operations 3D (3 menit, disarankan sebagai pembuka)
 
-Buka **Agent Office 3D**, pilih **2. Low stock at PP C**, tekan **Run and watch**. Tunjukkan suar event, amplop yang dikirim Orchestrator ke empat robot sekaligus, robot yang berjalan saat bekerja, lalu Dispatch Planner yang melambai menunggu persetujuan. Klik figur manusia untuk menampilkan konsep human in the loop. Lanjutkan ke Control Center untuk menandatangani docket.
+Buka **Live Operations 3D**, tekan **Reset story**, pilih kecepatan **2 h/s**, lalu **Play**.
+
+- Tunjukkan gauge silo di peta yang turun seiring jam. Silo PCC di PP C mendekati 25%.
+- Saat sensor memicu event, suar oranye berkedip, Orchestrator mengirim amplop ke empat robot sekaligus, dan layar kerja di atas robot menampilkan hasilnya.
+- Jam berhenti dan strip Box 8 muncul. Tekan **Approve** pada rekomendasi PP C.
+- Kapal memuat lalu berlayar di peta menuju PP C; ketika tiba, gauge silo naik kembali.
+- Biarkan badai datang di rute PP F: rute memerah, kapal melambat, agent merencanakan ulang.
+- Klik figur manusia untuk menampilkan konsep human in the loop.
 
 ## 1. Operasi normal (1 menit)
 
