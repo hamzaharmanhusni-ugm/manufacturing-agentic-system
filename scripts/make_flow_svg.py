@@ -110,5 +110,62 @@ def main():
     s.save("alur-kerja-sistem.svg")
 
 
+PHASES = [
+    ("MFG", "AMATI", "Perceive", "Dunia berubah: silo terkuras, kapal bergerak, cuaca berganti. Sensor dan agent pemantau membaca perubahan itu dan mengirim event.",
+     ["Sensor silo IIoT", "Stock Monitoring", "Fleet Tracking", "Distribution, Procurement"], "Gauge silo dan kapal di peta"),
+    ("GLB", "PIKIRKAN", "Reason", "Orchestrator membagi tugas. Agent menghitung forecast, prioritas plant, dan ranking kapal, lalu Narrator menjelaskan hasilnya.",
+     ["Orchestrator", "ML Forecasting, Demand & Priority", "Dispatch Planner (SAW)", "Narrator"], "Box 1 sampai 7 di docket"),
+    ("HUM", "PUTUSKAN", "Decide", "Manusia membaca rencana beserta penjelasannya, lalu menekan Approve atau Reject. Tanpa persetujuan, tidak ada kapal yang berangkat.",
+     ["Global Administrator", "Manufacturer Manager", "Shipping Manager"], "Box 8 Authorisation"),
+    ("SHP", "BERTINDAK", "Act", "Rencana dikirim ke API Shipping dan Manufacturer. Kapal memuat, berlayar, dan membongkar muatan, sehingga silo terisi kembali.",
+     ["Shipping API (assignment)", "Manufacturer API (jadwal tiba)", "Kapal di dunia nyata"], "Kapal berlayar, gauge silo naik"),
+]
+
+
+def overview():
+    s = Svg(1600, 960)
+    s.text(60, 64, "Alur Kerja Secara Garis Besar", 34, 800)
+    s.text(60, 98, "Empat tahap yang terus berulang. Setiap tahap dikerjakan oleh pihak yang berbeda, dan manusia selalu memegang keputusan.", 17, 400, MUTED)
+    cw, gap, y0, ch = 335, 60, 140, 520
+    for i, (code, name, en, what, who, where) in enumerate(PHASES):
+        x, c = 60 + i * (cw + gap), ENT[code]
+        s.rect(x, y0, cw, ch, "#fff", c, 2.5, 14)
+        s.rect(x, y0, cw, 86, c, c, 1, 14)
+        s.rect(x, y0 + 70, cw, 16, c, c, 1, 0)
+        s.text(x + 24, y0 + 54, f"{i + 1}  {name}", 28, 800, "#fff")
+        s.text(x + cw - 22, y0 + 54, en, 16, 600, "#e4ebf5", "end")
+        robot(s, x + cw / 2, y0 + 150, c, 1.1, human=(code == "HUM"))
+        s.text(x + 24, y0 + 222, "APA YANG TERJADI", 12, 800, c)
+        s.text(x + 24, y0 + 246, wrap(what, 36), 15.5, 400, INK, ls=22)
+        s.text(x + 24, y0 + 352, "SIAPA", 12, 800, c)
+        for j, w in enumerate(who):
+            s.add(f'<circle cx="{x + 30}" cy="{y0 + 372 + j * 24}" r="4" fill="{c}"/>')
+            s.text(x + 42, y0 + 377 + j * 24, w, 14.5, 600)
+        s.rect(x + 16, y0 + ch - 50, cw - 32, 34, PAPER_TINT, PAPER_TINT, 0, 17)
+        s.text(x + cw / 2, y0 + ch - 28, "Di aplikasi: " + where, 13, 700, c, "middle")
+        if i < 3:
+            s.arrow(x + cw + 8, y0 + 150, x + cw + gap - 8, y0 + 150, color=NAVY, sw=4)
+    # loop back
+    yl = y0 + ch + 30
+    s.path(f"M{60 + 3 * (cw + gap) + cw / 2},{y0 + ch + 4} L{60 + 3 * (cw + gap) + cw / 2},{yl + 40} L{60 + cw / 2},{yl + 40} L{60 + cw / 2},{y0 + ch + 8}", "#0e7490", 3, dash="9 6")
+    s.rect(560, yl + 22, 480, 36, "#f6f8fb", "#f6f8fb", 0, 0)
+    s.text(800, yl + 46, "Dunia sudah berubah, sensor membaca lagi, siklus berulang", 15, 700, "#0e7490", "middle")
+    yb = yl + 80
+    s.rect(60, yb, 700, 120, "#fff", "#b91c1c", 2.5, 12)
+    s.text(84, yb + 34, "Ada badai atau kapal terlambat?", 18, 800, "#b91c1c")
+    s.text(84, yb + 62, wrap("Kejadian itu masuk sebagai event baru di tahap AMATI. Sistem kembali ke tahap PIKIRKAN dan menyusun rencana baru, lalu manusia menyetujuinya lagi.", 78), 15, 400, INK, ls=21)
+    s.rect(790, yb, 750, 120, NAVY, NAVY, 1, 12)
+    s.text(814, yb + 34, "Pembagian peran", 18, 800, "#fff")
+    s.text(814, yb + 66, "Kode memutuskan", 16, 800, "#7dd3fc")
+    s.text(990, yb + 66, "angka dihitung model ML dan SAW di tahap PIKIRKAN", 14.5, 400, "#e4ebf5")
+    s.text(814, yb + 96, "Manusia bertindak", 16, 800, "#7dd3fc")
+    s.text(990, yb + 96, "tidak ada tindakan tanpa persetujuan di tahap PUTUSKAN", 14.5, 400, "#e4ebf5")
+    s.h = yb + 150
+    s.save("alur-kerja-garis-besar.svg")
+
+
+PAPER_TINT = "#f1f5f9"
+
 if __name__ == "__main__":
     main()
+    overview()

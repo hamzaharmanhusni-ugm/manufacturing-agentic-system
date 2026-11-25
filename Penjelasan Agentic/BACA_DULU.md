@@ -6,7 +6,8 @@ Urutan baca:
 
 | Berkas | Isi |
 |---|---|
-| 00-alur-kerja-sistem.svg | Gambaran besar: satu siklus kerja dalam 8 langkah |
+| 00a-alur-kerja-garis-besar (PNG, SVG) | Alur kerja secara garis besar: Amati, Pikirkan, Putuskan, Bertindak |
+| 00b-alur-kerja-8-langkah (PNG, SVG) | Satu siklus kerja dalam 8 langkah dengan contoh nyata |
 | 01 | Control Center: pusat kendali ekosistem |
 | 02 | Event memicu empat agent sekaligus (Box 1 sampai 5) |
 | 03 | Rencana, penjelasan, dan tanda tangan manusia (Box 6 sampai 8) |
@@ -19,4 +20,4 @@ Urutan baca:
 | 10 | Kapal tiba, silo terisi |
 | 11 | Audit trail: semua tercatat |
 
-Seluruh data bersifat sintetis. Gambar dibuat ulang dengan `python scripts/make_annotations.py`.
+Seluruh data bersifat sintetis. Gambar dibuat ulang dengan `python scripts/make_annotations.py` dan `python scripts/make_flow_svg.py`.
