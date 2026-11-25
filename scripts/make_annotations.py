@@ -12,7 +12,7 @@ OUT = ROOT / "Penjelasan Agentic"
 F = lambda n, b=False: ImageFont.truetype("C:/Windows/Fonts/segoeuib.ttf" if b else "C:/Windows/Fonts/segoeui.ttf", n)
 NAVY, INK, MUTED, PAPER = (11, 27, 51), (15, 23, 42), (71, 85, 105), (246, 248, 251)
 COL = {"GLB": (11, 27, 51), "MFG": (29, 78, 216), "SHP": (14, 116, 144), "DST": (146, 64, 14), "SUP": (91, 33, 182), "HUM": (217, 119, 6), "RED": (185, 28, 28), "SKY": (2, 132, 199)}
-PANEL = 620
+PANEL = 760
 
 
 def wrap(d, text, font, width):
@@ -27,10 +27,12 @@ def wrap(d, text, font, width):
     return lines + [cur]
 
 
-def make(name, shot, step, title, subtitle, marks, concept):
+def make(name, shot, step, title, subtitle, marks, concept, crop=None):
     """marks: list of (x, y, w, h, colour, heading, text) on the 1600x1000 screenshot."""
     im = Image.open(SHOTS / shot).convert("RGB")
-    W, H = im.size
+    if crop:
+        im = im.crop((0, 0, im.width, crop))  # ponytail: keep only the part the marks explain
+    W, H = im.width, 1000
     canvas = Image.new("RGB", (W + PANEL, H), PAPER)
     canvas.paste(im, (0, 0))
     over = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
@@ -48,7 +50,7 @@ def make(name, shot, step, title, subtitle, marks, concept):
     px = W + 32
     d.rectangle([W, 0, W + PANEL, H], fill=PAPER)
     d.line([W, 0, W, H], fill=(203, 213, 225), width=2)
-    d.text((px, 30), f"LANGKAH {step}", fill=COL["SKY"], font=F(17, True))
+    d.text((px, 30), step if isinstance(step, str) else f"LANGKAH {step}", fill=COL["SKY"], font=F(17, True))
     y = 56
     for line in wrap(d, title, F(30, True), PANEL - 64):
         d.text((px, y), line, fill=NAVY, font=F(30, True))
@@ -168,5 +170,112 @@ def main():
          "Trust dan akuntabilitas: setiap tindakan agent dan setiap keputusan manusia dapat ditelusuri kembali.")
 
 
+def menus():
+    tabs = (356, 138, 1170, 26)
+    make("12-simulation-center-skenario.png", "walk-sim-1.png", "MENU · SIMULATION CENTER", "Menguji enam skenario kejadian",
+         "Simulation Center digunakan untuk mencoba kejadian tertentu secara sengaja, lalu melihat cara para agent menanggapinya. Docket yang tampil adalah run terakhir.",
+         [(370, 145, 795, 33, "HUM", "Pilihan skenario", "Enam kejadian siap uji: operasi normal, stok rendah PP C, lonjakan permintaan PP F, kapal terlambat (replanning), cuaca buruk, dan gangguan pemasok. Setiap skenario mengubah data enterprise terkait."),
+          (370, 190, 360, 40, "HUM", "Deskripsi event", "Menjelaskan kejadian yang akan dikirim ke Orchestrator dan dampaknya pada data, misalnya silo turun atau kapal tertunda."),
+          (1204, 145, 297, 93, "GLB", "Run scenario dan Reset ecosystem", "Run mengirim event ke Orchestrator sehingga agent bekerja. Reset mengembalikan keempat enterprise ke data awal agar setiap uji dimulai dari kondisi yang sama."),
+          (356, 267, 1159, 271, "MFG", "Docket run: Box 1 sampai 5", "Judul run menunjukkan event yang diproses, di sini badai di rute PP F dengan gelombang 3,4 m. Empat agent dari dua enterprise mengisi Box 2 sampai 5 secara bersamaan; Fleet Tracking menandai PP F sailing not advised."),
+          (356, 571, 1159, 381, "HUM", "Box 6 sampai 8: rencana, penjelasan, persetujuan", "Dispatch Planner hanya merekomendasikan dua kapal karena rute PP F ditutup. Narrator menjelaskan, lalu kedua rekomendasi disetujui dan diberi stempel APPROVED.")],
+         "Pengujian berbasis skenario: event yang sama selalu menghasilkan alur agent yang sama, sehingga perilaku sistem dapat diperiksa dan dibandingkan antar-kejadian.")
+
+    make("13-simulation-center-tujuh-tab.png", "walk-sim-2.png", "MENU · SIMULATION CENTER", "Membaca hasil run secara rinci",
+         "Di bawah docket, satu run dapat ditelusuri dari kondisi awal sampai dampaknya pada KPI.",
+         [(356, 777, 1159, 36, "GLB", "Timeline eksekusi paralel", "Dapat dibuka untuk melihat kapan setiap agent mulai dan selesai. Batangnya saling tumpang tindih, bukti bahwa keempat agent bekerja bersamaan, bukan bergantian."),
+          (356, 833, 620, 32, "SKY", "Tujuh tab analisis", "1 Kondisi awal, 2 Event, 3 Agent yang terlibat, 4 Penalaran (negosiasi antar-enterprise), 5 Keputusan, 6 Perubahan dashboard, dan 7 Dampak KPI."),
+          (356, 880, 1159, 55, "MFG", "Kondisi awal sebelum agent bertindak", "Rata-rata days of cover 7,58 hari, 1 series berisiko stock-out, on-time 67%, dan 1 kapal terlambat. Angka ini dibandingkan dengan kondisi sesudah run pada tab 7."),
+          (356, 100, 1159, 670, "GLB", "Docket yang sama dengan Control Center", "Kotak 1 sampai 8 identik dengan Control Center; Simulation Center menambahkan konteks analisis di bawahnya.")],
+         "Explainability: setiap keputusan dapat ditelusuri ke data awal, event, penalaran setiap agent, dan dampaknya, sehingga manusia dapat menilai apakah agent bekerja dengan benar.")
+
+    make("14-kpi-dan-analytics.png", "walk-kpi.png", "MENU · KPI & ANALYTICS", "Mengukur kinerja sistem agentic",
+         "Semua indikator dihitung langsung dari API enterprise setiap kali halaman dibuka. Data bersifat sintetis.",
+         [(356, 132, 1159, 68, "MFG", "KPI prediksi dan stok", "WAPE forecast LightGBM 0,073 (semakin kecil semakin akurat), MAE ETA 2,82 jam dari Random Forest, 1 series berisiko stock-out, rata-rata days of cover 7,61 hari, on-time delivery 74%, dan waktu respons dispatch 4,7 detik."),
+          (356, 214, 1159, 68, "GLB", "KPI sistem agent", "Keberhasilan agent dan API 100%, sinkronisasi enterprise 100%, jumlah replanning, tingkat persetujuan manusia 100%, dan 0 keputusan yang masih menunggu."),
+          (356, 292, 1159, 334, "SHP", "Sebelum AI dan sesudah AI", "Lima grafik membandingkan proses manual (abu-abu, asumsi ilustratif spreadsheet) dengan sistem agentic (biru): respons dispatch dari 240 menit menjadi kurang dari 1 menit, WAPE dari 0,0937 ke 0,0735, plant berisiko dari 3 menjadi 1, dan days of cover dari 4,5 menjadi 7,61 hari.")],
+         "Evaluasi agent: kinerja diukur dari hasil (akurasi, ketepatan waktu, stok aman) dan dari perilaku sistem (keberhasilan agent, sinkronisasi, persetujuan manusia).", crop=640)
+
+    make("15-manufacturer-executive.png", "data-manufacturer-executive.png", "MENU · CEMENT MANUFACTURING", "Dashboard pabrik semen",
+         "Enterprise 1: PostgreSQL, REST port 8001. Pengguna: Manufacturer Manager, Marketing Planner, Operations Planner.",
+         [(*tabs, "MFG", "Sembilan tab sesuai departemen", "Executive, Marketing, Operations, Forecasting, Silo Monitoring, Packing Plants, Stock-out, Agents, dan Decision History. Tab yang terlihat bergantung pada peran (RBAC)."),
+          (356, 184, 1170, 68, "MFG", "Ringkasan pabrik", "9 packing plant, 22 silo yang dipantau sensor IIoT, usable stock 48.803 t, permintaan harian 6.583 t, kiriman yang sedang menuju plant, dan stok load port."),
+          (356, 256, 564, 314, "MFG", "Skor prioritas (Demand & Priority Agent)", "Setiap plant diberi grade 1 sampai 5 pada lima kriteria berbobot (Pers. 14). Batang terpanjang adalah plant yang paling mendesak untuk dikirim."),
+          (950, 256, 576, 314, "MFG", "Days of cover vs ARIMA (Stock Monitoring Agent)", "Setiap titik adalah satu series plant dan jenis semen. Sumbu datar: berapa hari stok cukup; sumbu tegak: perkiraan hari sampai habis dari ARIMA. Area merah muda menandai series berisiko.")],
+         "Perceive dan reason di dalam enterprise: agent Manufacturer membaca data milik pabrik sendiri dan hanya mengirim hasilnya (skor dan risiko) ke Orchestrator, bukan data mentah.")
+
+    make("16-manufacturer-forecasting.png", "data-manufacturer-forecasting.png", "MENU · CEMENT MANUFACTURING", "Peramalan permintaan 14 hari",
+         "Tab Forecasting menampilkan kerja ML Forecasting Agent.",
+         [(356, 184, 1170, 68, "MFG", "Champion dan challenger", "LightGBM (champion) dengan WAPE 0,074 dibandingkan TFT (challenger, mode simulasi) dengan WAPE 0,095 dan ensemble 0,079. Coverage P10 sampai P90 sebesar 70%. Model dengan galat terkecil yang digunakan."),
+          (356, 290, 1170, 56, "MFG", "Pilih series", "Setiap kombinasi plant dan jenis semen memiliki forecast sendiri; di sini PP C OPC."),
+          (356, 366, 1170, 314, "SKY", "Forecast dengan rentang ketidakpastian", "Garis tengah adalah P50 (nilai paling mungkin), pita biru muda adalah rentang P10 sampai P90. Penurunan tajam menandai hari libur atau akhir pekan yang dipelajari dari riwayat penjualan 400 hari.")],
+         "Learning agent: model belajar dari data historis, dan metrik backtest (WAPE) berperan sebagai critic yang menentukan model mana yang dipercaya.")
+
+    make("17-manufacturer-agents.png", "data-manufacturer-agents.png", "MENU · CEMENT MANUFACTURING", "Agent yang tinggal di dalam enterprise",
+         "Tab Agents memperlihatkan bahwa ketiga agent Manufacturer berjalan di dalam API Manufacturer sendiri.",
+         [(356, 184, 1158, 290, "MFG", "Tiga agent Manufacturer", "Stock Monitoring, ML Forecasting, dan Demand & Priority, lengkap dengan status COMPLETED, ringkasan hasil terakhir, waktu run, dan durasi (sekitar 640 ms)."),
+          (356, 514, 1158, 42, "HUM", "Menjalankan agent secara langsung", "Setiap agent dapat dijalankan dari halaman ini tanpa melalui Orchestrator, berguna untuk memeriksa satu agent secara terpisah."),
+          (356, 584, 1158, 414, "SKY", "Log eksekusi A2A", "Pesan antara Orchestrator dan agent Manufacturer: request berisi tugas (misalnya forecast 14 hari P10/P50/P90), lalu response berisi hasilnya (misalnya champion tetap LightGBM).")],
+         "Otonomi data dan komunikasi A2A: agent tinggal bersama data enterprise-nya, dan Orchestrator hanya berkomunikasi melalui pesan request dan response yang tercatat.")
+
+    make("18-shipping-live-tracking.png", "data-shipping-live-vessel-tracking.png", "MENU · SHIPPING & LOGISTICS", "Melacak 19 kapal",
+         "Enterprise 2: anak perusahaan pelayaran, MongoDB, REST port 8002. Hanya GPS, status, ETA, dan riwayat voyage yang dibagikan.",
+         [(356, 138, 970, 26, "SHP", "Sembilan tab armada", "Fleet Overview, Live Vessel Tracking, Vessel Availability, Voyage History, ETA Prediction, Ship Ranking, Shipping Assignment, Maintenance Status, dan Agents."),
+          (356, 260, 1158, 564, "SHP", "Peta posisi kapal", "Titik kapal di perairan Indonesia, load port (merah), dan packing plant. Garis menunjukkan kapal yang sedang menuju plant tujuan."),
+          (356, 876, 1158, 124, "SHP", "Status geofence dan DBSCAN", "Fleet Tracking Agent menentukan status setiap kapal (sailing, anchored, berthed) dengan dua cara: aturan geofence dari proposal dan klaster DBSCAN dari titik GPS. Keduanya ditampilkan berdampingan.")],
+         "Perceive dari sensor GPS: agent mengubah titik koordinat mentah menjadi status kapal yang bermakna bagi perencanaan dispatch.")
+
+    make("19-shipping-eta-prediction.png", "data-shipping-eta-prediction.png", "MENU · SHIPPING & LOGISTICS", "Memprediksi waktu tiba kapal",
+         "Tab ETA Prediction menampilkan model Random Forest milik Fleet Tracking Agent.",
+         [(356, 184, 1170, 68, "SHP", "Kualitas model", "Random Forest 200 pohon, MAE 2,86 jam pada 20% data uji, dilatih dari 225 voyage. Weibull shape 1,751 (lebih dari 1 berarti risiko rusak naik seiring pemakaian mesin).".replace("pemakaian", "penggunaan")),
+          (356, 256, 568, 288, "SHP", "Fitur paling berpengaruh", "Plant tujuan dan jarak tempuh paling menentukan ETA, disusul kecepatan rata-rata, tinggi gelombang, bulan, dan muatan."),
+          (950, 256, 576, 288, "SKY", "ETA dengan rentang", "Setiap batang adalah perkiraan jam tiba untuk kapal yang sedang berlayar; garis hitam adalah rentang dari sebaran antar-pohon. Rentang lebar berarti prediksi kurang pasti.")],
+         "Agen rasional yang jujur tentang ketidakpastian: prediksi selalu disertai rentang, sehingga Dispatch Planner dan manusia mengetahui seberapa yakin agent.")
+
+    make("20-shipping-ship-ranking.png", "data-shipping-ship-ranking.png", "MENU · SHIPPING & LOGISTICS", "Ranking kapal dengan SAW",
+         "Tab Ship Ranking membuka perhitungan Dispatch Planner untuk setiap plant yang membutuhkan kiriman.",
+         [(356, 184, 1170, 206, "SHP", "PP H membutuhkan OPC", "Kandidat diurutkan berdasarkan skor SAW. Ship I terpilih (0,8845) karena kapasitas 5.500 t dan 3 proven calls, meskipun waktu tibanya lebih lama daripada Ship L."),
+          (356, 414, 1170, 206, "SHP", "PP G membutuhkan PCC", "Ship P terpilih (0,8983). Kolom risiko kerusakan 14 hari dari model Weibull ikut ditampilkan; risiko di atas 30% diberi peringatan."),
+          (600, 456, 926, 30, "GLB", "Cara membaca skor", "Setiap kriteria dinormalkan (benefit: nilai dibagi maksimum; cost: minimum dibagi nilai), lalu dijumlahkan dengan bobot: arrival time 0,35, capacity 0,20, proven calls 0,20, evidence 0,15, gelombang 0,10.")],
+         "Utility-based agent: pilihan kapal adalah alternatif dengan nilai utilitas tertinggi, dan seluruh perhitungannya terbuka untuk diperiksa manusia.")
+
+    make("21-distribution.png", "data-distribution-regional-demand.png", "MENU · DISTRIBUTION", "Permintaan di tingkat wilayah",
+         "Enterprise 3 (ekstensi prototipe): SQLite, REST port 8003, satuan sak 50 kg.",
+         [(356, 50, 1170, 56, "DST", "Identitas enterprise", "Distribution adalah ekstensi untuk memenuhi syarat empat enterprise. Teknologinya sengaja berbeda (SQLite, satuan sak) untuk menunjukkan heterogenitas."),
+          (356, 138, 770, 26, "DST", "Tujuh tab distribusi", "Regional Inventory, Distributor Orders, Regional Demand, Order Fulfillment, Distribution Performance, Stock Alerts, dan Agents."),
+          (356, 184, 1170, 346, "DST", "Permintaan mingguan per wilayah", "Setiap garis adalah satu wilayah (Banten, Jakarta, Bali, dan lainnya) dalam satuan sak. Distribution Agent memantau lonjakan dan mengirim sinyal ke Orchestrator, yang menormalkan satuannya menjadi ton (20 sak = 1 t).")],
+         "Interoperabilitas semantik: data dengan satuan dan format berbeda tetap dapat digabung karena Orchestrator menormalkannya.")
+
+    make("22-supplier-procurement.png", "data-supplier-procurement-risk.png", "MENU · SUPPLIER & PROCUREMENT", "Risiko pasokan bahan baku",
+         "Enterprise 4 (ekstensi prototipe): PostgreSQL dari ekspor CSV ERP, REST port 8004.",
+         [(356, 138, 830, 26, "SUP", "Tujuh tab pengadaan", "Supplier Overview, Raw Material Inventory, Procurement Orders, Supplier Performance, Supply Availability, Procurement Risk, dan Agents."),
+          (356, 184, 1170, 396, "SUP", "Risiko per material", "Procurement Agent menghitung cakupan pasokan setiap material (clinker, gypsum, limestone, fly ash, batu bara, kantong kertas) dan menandai material yang kritis bagi produksi. Hijau berarti risiko rendah."),
+          (356, 600, 1170, 300, "RED", "Saat pemasok terganggu", "Dalam skenario gangguan pemasok, ketersediaan clinker turun ke 30%. Agent mengusulkan pemasok alternatif, dan Orchestrator membatasi kapasitas produksi sehingga kuantitas dispatch ikut menyesuaikan.")],
+         "Koordinasi lintas enterprise: masalah di hulu (pemasok) memengaruhi keputusan di hilir (dispatch kapal) melalui Orchestrator.")
+
+    make("23-architecture.png", "walk-arch.png", "MENU · ARCHITECTURE", "Arsitektur dan representasi enterprise",
+         "Halaman ini membaca langsung dari API setiap enterprise, sehingga isinya selalu sesuai dengan sistem yang berjalan.",
+         [(365, 140, 1142, 222, "GLB", "Diagram alur panggilan", "Kotak navy adalah Global Orchestrator (Dispatch Planner, Orchestrator, Narrator, Human approval). Panah padat adalah panggilan tugas A2A melalui HTTP dengan API key; panah putus-putus adalah hasil yang dikembalikan."),
+          (356, 384, 860, 22, "SKY", "Cara membaca panah", "Hasil keempat worker digabung sekali oleh Dispatch Planner, lalu diteruskan ke Narrator dan persetujuan manusia."),
+          (356, 462, 1160, 538, "MFG", "E_i = (U, M, D, A, P, G)", "Setiap enterprise dijelaskan dengan enam unsur: U pengguna dan peran, M modul aplikasi, D data lokal, A agent, P protokol dan API, G kebijakan berbagi data. Label PROPOSAL atau PROTOTYPE EXTENSION menunjukkan asalnya.")],
+         "Multi-Agent System lintas organisasi: setiap enterprise adalah lingkungan mandiri dengan data, agent, dan aturannya sendiri, dan hanya terhubung melalui protokol yang disepakati.")
+
+    make("24-governance-rbac.png", "walk-gov-rbac.png", "MENU · GOVERNANCE & SECURITY", "Siapa boleh melakukan apa (RBAC)",
+         "Tab Roles menampilkan tujuh peran pengguna dan hak masing-masing.",
+         [(357, 138, 600, 32, "GLB", "Enam tab tata kelola", "Roles (RBAC), Data-sharing policies, Audit trail, API access logs, Authentication test, dan Guardrails."),
+          (357, 185, 410, 268, "GLB", "Peran dan halaman", "Setiap peran hanya melihat halaman yang relevan. Contoh: Marketing Planner hanya melihat Manufacturer dan beberapa tab saja."),
+          (948, 185, 360, 268, "HUM", "Hak menyetujui dan menjalankan", "Hanya Global Administrator, Manufacturer Manager, dan Shipping Manager yang dapat menyetujui dispatch dan menjalankan skenario. Peran lain melihat tombol Approve dalam keadaan nonaktif."),
+          (1308, 185, 218, 268, "SKY", "API key per peran", "Dashboard menggunakan kunci yang berbeda untuk setiap peran, sehingga API enterprise mengetahui siapa yang meminta data.")],
+         "Bounded autonomy dan akuntabilitas: wewenang manusia dan agent dibatasi sesuai peran, sehingga keputusan penting hanya diambil oleh pihak yang berhak.")
+
+    make("25-governance-kebijakan-data.png", "walk-gov-policy.png", "MENU · GOVERNANCE & SECURITY", "Kebijakan berbagi data G_i",
+         "Tab Data-sharing policies: setiap enterprise menentukan sendiri data apa yang boleh dibaca pihak lain.",
+         [(357, 183, 845, 22, "GLB", "Prinsip", "Contohnya, Orchestrator tidak dapat membaca harga dan margin mentah Manufacturer atau data mesin Shipping."),
+          (357, 222, 282, 248, "MFG", "Kebijakan Manufacturer", "global-orchestrator memperoleh scope agents, execute, dan read:shared, tetapi tidak finance. Portal enterprise lain hanya read:shared."),
+          (652, 222, 874, 214, "SHP", "Kebijakan tiga enterprise lain", "Shipping, Distribution, dan Supplier masing-masing memiliki daftar principal dan scope sendiri. Permintaan di luar scope ditolak dengan HTTP 403, dan kunci yang tidak valid ditolak dengan 401.")],
+         "Kepercayaan antar-organisasi: kerja sama agent tidak membutuhkan berbagi seluruh data, cukup scope minimal yang ditegakkan oleh kode di setiap API.")
+
+
 if __name__ == "__main__":
     main()
+    menus()
