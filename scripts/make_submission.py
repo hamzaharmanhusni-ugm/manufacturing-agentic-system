@@ -70,6 +70,8 @@ def main():
             z.write(ROOT / rel, f"04_Dokumentasi/{Path(rel).name}")
         for f in sorted((ROOT / "docs" / "diagrams").glob("*.*")):
             z.write(f, f"04_Dokumentasi/diagrams/{f.name}")
+        for f in sorted((ROOT / "Penjelasan Agentic").glob("*.*")):
+            z.write(f, f"05_Penjelasan_Agentic/{f.name}")
         for f in sorted((ROOT / "docs" / "screenshots").glob("*.png")):
             if not f.name.startswith("before-"):
                 z.write(f, f"04_Dokumentasi/screenshots/{f.name}")
